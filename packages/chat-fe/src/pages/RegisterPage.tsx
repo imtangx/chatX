@@ -7,13 +7,14 @@ import {
   ProFormText,
   setAlpha,
 } from '@ant-design/pro-components';
-import { Space, Tabs, message, theme, Form } from 'antd';
+import { Space, Tabs, theme, Form, App } from 'antd';
 import type { CSSProperties } from 'react';
 import React, { useState } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
 
 export default () => {
+  const { message } = App.useApp();
   const { token } = theme.useToken();
 
   const iconStyles: CSSProperties = {
@@ -44,6 +45,11 @@ export default () => {
 
   return (
     <ProConfigProvider hashed={false}>
+      <style>{`
+        .ant-pro-form-login-title {
+          color: black;
+        }
+      `}</style>
       <div style={{ backgroundColor: token.colorBgContainer }}>
         <LoginForm
           logo={logoSvg}
@@ -56,73 +62,83 @@ export default () => {
             },
           }}
         >
-          <Tabs centered>
-            <Tabs.TabPane key={'account'} tab={'注册新账户'} />
-          </Tabs>
-          <>
-            <ProFormText
-              name='username'
-              validateTrigger='onBlur'
-              fieldProps={{
-                size: 'large',
-                prefix: <UserOutlined className={'prefixIcon'} />,
-              }}
-              placeholder={'用户名'}
-              rules={[
-                {
-                  required: true,
-                  message: '请输入用户名!',
-                },
-                {
-                  min: 2,
-                  message: '用户名长度至少为 2 位！',
-                },
-              ]}
-            />
-            <ProFormText.Password
-              name='password'
-              validateTrigger='onBlur'
-              fieldProps={{
-                size: 'large',
-                prefix: <LockOutlined className={'prefixIcon'} />,
-              }}
-              placeholder={'密码'}
-              rules={[
-                {
-                  required: true,
-                  message: '请输入密码！',
-                },
-                {
-                  min: 6,
-                  message: '密码长度至少为 6 位！',
-                },
-              ]}
-            />
-            <ProFormText.Password
-              name='confirmPassword'
-              validateTrigger='onBlur'
-              fieldProps={{
-                size: 'large',
-                prefix: <LockOutlined className={'prefixIcon'} />,
-              }}
-              placeholder={'确认密码'}
-              rules={[
-                {
-                  required: true,
-                  message: '请再次输入密码！',
-                },
-                // 自定义验证规则 确认密码
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('password') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('两次输入的密码不一致！'));
-                  },
-                }),
-              ]}
-            />
-          </>
+          <Tabs
+            centered
+            items={[
+              // 使用 items 属性配置 Tab 页项
+              {
+                key: 'account',
+                label: '注册新账户',
+                // children 属性用于放置 Tab 页的内容
+                children: (
+                  <>
+                    <ProFormText
+                      name='username'
+                      validateTrigger='onBlur'
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <UserOutlined className={'prefixIcon'} />,
+                      }}
+                      placeholder={'用户名'}
+                      rules={[
+                        {
+                          required: true,
+                          message: '请输入用户名!',
+                        },
+                        {
+                          min: 2,
+                          message: '用户名长度至少为 2 位！',
+                        },
+                      ]}
+                    />
+                    <ProFormText.Password
+                      name='password'
+                      validateTrigger='onBlur'
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <LockOutlined className={'prefixIcon'} />,
+                      }}
+                      placeholder={'密码'}
+                      rules={[
+                        {
+                          required: true,
+                          message: '请输入密码！',
+                        },
+                        {
+                          min: 6,
+                          message: '密码长度至少为 6 位！',
+                        },
+                      ]}
+                    />
+                    <ProFormText.Password
+                      name='confirmPassword'
+                      validateTrigger='onBlur'
+                      fieldProps={{
+                        size: 'large',
+                        prefix: <LockOutlined className={'prefixIcon'} />,
+                      }}
+                      placeholder={'确认密码'}
+                      rules={[
+                        {
+                          required: true,
+                          message: '请再次输入密码！',
+                        },
+                        // 自定义验证规则 确认密码
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('password') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('两次输入的密码不一致！'));
+                          },
+                        }),
+                      ]}
+                    />
+                  </>
+                ),
+              },
+            ]}
+          />
           <div
             style={{
               marginBlockEnd: 24,
