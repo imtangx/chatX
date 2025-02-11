@@ -9,7 +9,8 @@
     "composite": true,
     "baseUrl": "./",
     "paths": {
-      
+      "@chatx/types": ["packages/types/src"],
+      "@chatx/fe": ["packages/chat-fe/src"],
     }
   },
   "include": ["./packages/**/*.ts"],
