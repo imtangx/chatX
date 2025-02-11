@@ -1,21 +1,16 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
-import AvatarJpg from '../assets/avatar.jpg';
-import BubbleGreySvg from '../assets/bubble-grey.svg';
-import BubbleBlueSvg from '../assets/bubble-blue.svg';
-import ContactsGreySvg from '../assets/contacts-grey.svg';
-import ContactsBlueSvg from '../assets/contacts-blue.svg';
-import NightModeGreySvg from '../assets/nightMode-grey.svg';
-import NightModeBlueSvg from '../assets/nightMode-blue.svg';
+import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, NightModeGrey, NightModeBlue } from '../assets';
 import { MenuItem } from '@chatx/types';
-import { Flex, Layout, Input, Button, ConfigProvider, theme } from 'antd';
+import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
+import { LeftSider } from '../components/Sidebar';
 
 const { Header, Footer, Sider, Content } = Layout;
 
 const ChatPage: React.FC = () => {
   const menuItems: MenuItem[] = [
-    { id: 'chat', label: '聊天', icon: BubbleGreySvg, iconSelected: BubbleBlueSvg },
-    { id: 'contacts', label: '联系人', icon: ContactsGreySvg, iconSelected: ContactsBlueSvg },
+    { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
+    { id: 'contacts', label: '联系人', icon: ContactsGrey, iconSelected: ContactsBlue },
   ];
 
   const [activeItem, setActiveItem] = useState<string>('chat');
@@ -25,44 +20,19 @@ const ChatPage: React.FC = () => {
     setActiveItem(id);
   };
 
+  const handleNightModeToggle = () => {
+    setIsNightMode(!isNightMode);
+  };
+
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider width='5%' style={{ background: isNightMode ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)' }}>
-        <div
-          style={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '0 10px',
-          }}
-        >
-          <div style={{ margin: '30px 0' }}>
-            <img src={AvatarJpg} alt='AvatarJpg' style={{ width: '100%', height: '100%' }} />
-          </div>
-          {menuItems.map(item => (
-            <div
-              key={item.id}
-              onClick={() => handleItemClick(item.id)}
-              style={{ cursor: 'pointer', margin: '15px 2px' }}
-            >
-              <img
-                src={activeItem === item.id ? item.iconSelected : item.icon}
-                alt={item.label}
-                style={{ width: '100%', height: '100%' }}
-              />
-            </div>
-          ))}
-
-          <div style={{ marginBottom: '30px', marginTop: 'auto', cursor: 'pointer' }}>
-            <img
-              src={isNightMode ? NightModeBlueSvg : NightModeGreySvg}
-              alt='NightMode'
-              style={{ width: '100%', height: '100%' }}
-              onClick={() => setIsNightMode(!isNightMode)}
-            />
-          </div>
-        </div>
+        <LeftSider
+          activeItem={activeItem}
+          isNightMode={isNightMode}
+          handleItemClick={handleItemClick}
+          handleNightModeToggle={handleNightModeToggle}
+        />
       </Sider>
       <Sider
         width='25%'
