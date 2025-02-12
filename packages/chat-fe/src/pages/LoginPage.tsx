@@ -16,9 +16,10 @@ import {
 } from '@ant-design/pro-components';
 import { Space, Tabs, theme, App } from 'antd';
 import type { CSSProperties } from 'react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 type LoginType = 'email' | 'account';
 
@@ -26,6 +27,8 @@ export default () => {
   const { message } = App.useApp();
   const { token } = theme.useToken();
   const [loginType, setLoginType] = useState<LoginType>('account');
+
+  const navigate = useNavigate();
 
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
@@ -51,11 +54,29 @@ export default () => {
       const response = await axios.post(loginBackendUrl, apiPayload);
       console.log('登录成功，后端响应数据:', response.data);
       message.success('登录成功！');
+
+      const token = response.data.token;
+      if (token) {
+        localStorage.setItem('authToken', token);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+      } else {
+        message.error('登录失败，未收到Token！');
+      }
     } catch (err) {
       console.error('登录失败，请求出错:', err);
       message.error('登录失败，请稍后重试！');
     }
   };
+
+  // 如果存在token 跳转首页
+  useEffect(() => {
+    const authToken = localStorage.getItem('authToken');
+    if (authToken) {
+      navigate('/');
+    }
+  }, []);
 
   return (
     <ProConfigProvider hashed={false}>

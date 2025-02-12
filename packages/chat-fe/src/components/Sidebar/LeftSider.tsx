@@ -1,19 +1,15 @@
 import React from 'react';
 import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, NightModeGrey, NightModeBlue } from '../../assets';
+import { LogoutOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import { MenuItem } from '@chatx/types';
 
 interface LeftSiderProps {
-  /** storybook args配置 */
-  primary?: boolean;
-  label?: string;
-  /** 当前选中的菜单项ID */
   activeItem: string;
-  /** 夜间模式状态 */
   isNightMode: boolean;
-  /** 菜单项点击回调 */
   handleItemClick: (id: string) => void;
-  /** 夜间模式切换回调 */
   handleNightModeToggle: () => void;
+  handleLogout: () => void;
 }
 
 const defaultMenuItems: MenuItem[] = [
@@ -26,6 +22,7 @@ const LeftSider: React.FC<LeftSiderProps> = ({
   isNightMode,
   handleItemClick,
   handleNightModeToggle,
+  handleLogout,
 }) => {
   return (
     <div
@@ -41,6 +38,10 @@ const LeftSider: React.FC<LeftSiderProps> = ({
       <div style={{ margin: '30px 0' }}>
         <img src={Avatar} alt='Avatar' style={{ width: '100%', height: '100%' }} />
       </div>
+
+      <Button icon={<LogoutOutlined />} onClick={handleLogout} style={{ cursor: "pointer", float: 'right' }}>
+        登出
+      </Button>
 
       {defaultMenuItems.map(item => (
         <div key={item.id} onClick={() => handleItemClick(item.id)} style={{ cursor: 'pointer', margin: '15px 2px' }}>

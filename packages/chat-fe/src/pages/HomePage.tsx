@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
-import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, NightModeGrey, NightModeBlue } from '../assets';
-import { MenuItem } from '@chatx/types';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
 import { LeftSider } from '../components/Sidebar';
 
 const { Header, Footer, Sider, Content } = Layout;
 
-const ChatPage: React.FC = () => {
-  const menuItems: MenuItem[] = [
-    { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
-    { id: 'contacts', label: '联系人', icon: ContactsGrey, iconSelected: ContactsBlue },
-  ];
-
+const HomePage: React.FC = () => {
   const [activeItem, setActiveItem] = useState<string>('chat');
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
 
@@ -24,6 +17,11 @@ const ChatPage: React.FC = () => {
     setIsNightMode(!isNightMode);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    window.location.href = '/auth/login';
+  };
+
   return (
     <Layout style={{ height: '100vh' }}>
       <Sider width='5%' style={{ background: isNightMode ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)' }}>
@@ -32,6 +30,7 @@ const ChatPage: React.FC = () => {
           isNightMode={isNightMode}
           handleItemClick={handleItemClick}
           handleNightModeToggle={handleNightModeToggle}
+          handleLogout={handleLogout}
         />
       </Sider>
       <Sider
@@ -94,4 +93,4 @@ const ChatPage: React.FC = () => {
   );
 };
 
-export default ChatPage;
+export default HomePage;
