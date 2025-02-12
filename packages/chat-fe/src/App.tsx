@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PrivateRoute from './components/Private/PrivateRoute';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import './App.css';
 
@@ -54,7 +55,14 @@ function App() {
           />
 
           {/* 自定义黑暗模式的页面 */}
-          <Route path='/' element={<HomePage />} />
+          <Route
+            path='/'
+            element={
+              <PrivateRoute> {/** 路由守卫包裹HomePage组件 */}
+                <HomePage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </AntdApp>
     </BrowserRouter>
