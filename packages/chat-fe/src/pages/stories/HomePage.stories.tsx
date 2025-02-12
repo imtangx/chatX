@@ -9,9 +9,4 @@ const meta: Meta<typeof HomePage> = {
 export default meta;
 type Story = StoryObj<typeof HomePage>;
 
-export const Primary: Story = {
-  args: {
-    primary: true,
-    label: 'HomePage',
-  },
-};
+export const Default: Story = {}; 

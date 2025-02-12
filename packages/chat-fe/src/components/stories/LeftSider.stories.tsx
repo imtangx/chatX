@@ -9,9 +9,4 @@ const meta: Meta<typeof LeftSider> = {
 export default meta;
 type Story = StoryObj<typeof LeftSider>;
 
-export const Primary: Story = {
-  args: {
-    primary: true,
-    label: 'LeftSider',
-  },
-};
+export const Default: Story = {}; 
