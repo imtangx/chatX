@@ -7,63 +7,52 @@ import PrivateRoute from './components/Private/PrivateRoute';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import './App.css';
 
-// 创建主题包装组件
-const ThemeWrapper = ({ children }: { children: React.ReactNode }) => {
-  const [isDark, setIsDark] = useState(false);
-
-  return (
-    <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-      {/* 主题切换按钮 */}
-      <button
-        onClick={() => setIsDark(!isDark)}
-        style={{
-          background: isDark ? 'rgb(50, 50, 50)' : 'rgb(220, 220, 220)',
-          position: 'fixed',
-          top: 20,
-          right: 20,
-          zIndex: 1000,
-        }}
-      >
-        {isDark ? '🌞' : '🌙'}
-      </button>
-      {children}
-    </ConfigProvider>
-  );
-};
-
 function App() {
+  const getInitIsDark = () => {
+    const storedIsDark = localStorage.getItem('isDark');
+    return storedIsDark ? JSON.parse(storedIsDark) === true : false;
+  };
+  const [isDark, setIsDark] = useState<boolean>(getInitIsDark()); // 在 App 组件中管理全局 isDark 状态
+  const handleIsDarkToggle = () => {
+    setIsDark(prevIsDark => {
+      const newIsDark = !prevIsDark;
+      localStorage.setItem('isDark', JSON.stringify(newIsDark));
+      return newIsDark;
+    });
+  };
+
   return (
     <BrowserRouter>
       <AntdApp>
-        <Routes>
-          {/* 需要全局黑暗模式的页面 */}
-          <Route
-            path='/auth/login'
-            element={
-              <ThemeWrapper>
-                <LoginPage />
-              </ThemeWrapper>
-            }
-          />
-          <Route
-            path='/auth/register'
-            element={
-              <ThemeWrapper>
-                <RegisterPage />
-              </ThemeWrapper>
-            }
-          />
-
-          {/* 自定义黑暗模式的页面 */}
-          <Route
-            path='/'
-            element={
-              <PrivateRoute> {/** 路由守卫包裹HomePage组件 */}
-                <HomePage />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
+        <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+          {/* 使用 ConfigProvider 包裹 Routes，根据 isDark 切换主题 */}
+          <button
+            onClick={() => handleIsDarkToggle()}
+            style={{
+              background: isDark ? 'rgb(50, 50, 50)' : 'rgb(220, 220, 220)',
+              position: 'fixed',
+              top: 15,
+              right: 15,
+              zIndex: 1000,
+            }}
+          >
+            {isDark ? '🌙' : '🌞'}
+          </button>
+          <Routes>
+            <Route path='/auth/login' element={<LoginPage />} />
+            <Route path='/auth/register' element={<RegisterPage />} />
+            <Route
+              path='/'
+              element={
+                <PrivateRoute>
+                  {' '}
+                  {/** 路由守卫包裹HomePage组件 */}
+                  <HomePage isDark={isDark} />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </ConfigProvider>
       </AntdApp>
     </BrowserRouter>
   );

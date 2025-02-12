@@ -1,38 +1,20 @@
 import React from 'react';
-import {
-  Avatar,
-  BubbleGrey,
-  BubbleBlue,
-  ContactsGrey,
-  ContactsBlue,
-  NightModeGrey,
-  NightModeBlue,
-  LogoutGrey,
-} from '../../assets';
+import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, LogoutGrey } from '../../assets';
 import { MenuItem } from '@chatx/types';
 
 interface LeftSiderProps {
   activeItem: string;
-  isNightMode: boolean;
+  isDark: boolean;
   handleItemClick: (id: string) => void;
-  handleNightModeToggle: () => void;
   handleLogout: () => void;
 }
 
 const MenuItems: MenuItem[] = [
   { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
   { id: 'contacts', label: '联系人', icon: ContactsGrey, iconSelected: ContactsBlue },
-  { id: 'nightMode', label: '夜间模式', icon: NightModeGrey, iconSelected: NightModeBlue },
-  { id: 'logout', label: '登出', icon: LogoutGrey, iconSelected: LogoutGrey },
 ];
 
-const LeftSider: React.FC<LeftSiderProps> = ({
-  activeItem,
-  isNightMode,
-  handleItemClick,
-  handleNightModeToggle,
-  handleLogout,
-}) => {
+const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {
   return (
     <div
       style={{
@@ -41,7 +23,7 @@ const LeftSider: React.FC<LeftSiderProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         padding: '0 10px',
-        background: isNightMode ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)',
+        background: isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)',
       }}
     >
       <div style={{ borderRadius: '50%', margin: '30px 0', overflow: 'hidden' }}>
@@ -66,15 +48,6 @@ const LeftSider: React.FC<LeftSiderProps> = ({
 
       {/** 填满中间空白区域 */}
       <div style={{ flexGrow: '1' }}></div>
-
-      <div style={{ cursor: 'pointer', width: '80%', margin: '15px 0' }}>
-        <img
-          src={isNightMode ? NightModeBlue : NightModeGrey}
-          alt='NightMode'
-          style={{ width: '100%', height: '100%' }}
-          onClick={handleNightModeToggle}
-        />
-      </div>
 
       <div style={{ cursor: 'pointer', width: '80%', margin: '15px 0' }}>
         <img src={LogoutGrey} alt='Logout' style={{ width: '100%', height: '100%' }} onClick={handleLogout} />

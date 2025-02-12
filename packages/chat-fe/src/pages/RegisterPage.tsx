@@ -56,7 +56,7 @@ export default () => {
           color: black;
         }
       `}</style>
-      <div style={{ backgroundColor: token.colorBgContainer }}>
+      <div style={{ backgroundColor: token.colorBgContainer, height: '100vh' }}>
         <LoginForm
           logo={logoSvg}
           title='chatX'

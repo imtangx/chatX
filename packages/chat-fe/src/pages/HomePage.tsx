@@ -6,17 +6,16 @@ import { useNavigate } from 'react-router-dom';
 
 const { Header, Footer, Sider, Content } = Layout;
 
-const HomePage: React.FC = () => {
+interface HomePageProps {
+  isDark: boolean;
+}
+
+const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   const [activeItem, setActiveItem] = useState<string>('chat');
-  const [isNightMode, setIsNightMode] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleItemClick = (id: string) => {
     setActiveItem(id);
-  };
-
-  const handleNightModeToggle = () => {
-    setIsNightMode(!isNightMode);
   };
 
   const handleLogout = () => {
@@ -26,19 +25,18 @@ const HomePage: React.FC = () => {
 
   return (
     <Layout style={{ height: '100vh' }}>
-      <Sider width='5%' style={{ background: isNightMode ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)' }}>
+      <Sider width='5%' style={{ background: isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)' }}>
         <LeftSider
           activeItem={activeItem}
-          isNightMode={isNightMode}
+          isDark={isDark}
           handleItemClick={handleItemClick}
-          handleNightModeToggle={handleNightModeToggle}
           handleLogout={handleLogout}
         />
       </Sider>
       <Sider
         width='25%'
         style={{
-          background: isNightMode ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
+          background: isDark ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
           borderRight: '1px solid rgba(0, 0, 0, 0.1',
         }}
       >
@@ -47,12 +45,12 @@ const HomePage: React.FC = () => {
             style={{
               display: 'flex',
               padding: '0',
-              background: isNightMode ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
+              background: isDark ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
             }}
           >
             <div style={{ display: 'flex', width: '100%' }}>
               <form style={{ display: 'flex', margin: '15px 20px', width: '100%' }}>
-                <ConfigProvider theme={{ algorithm: isNightMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+                <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
                   <Input type='text' placeholder='搜索' variant='filled'></Input>
                 </ConfigProvider>
                 <Button
@@ -64,15 +62,15 @@ const HomePage: React.FC = () => {
               </form>
             </div>
           </Header>
-          <Content style={{ background: isNightMode ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
+          <Content style={{ background: isDark ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
             信息栏
           </Content>
         </Layout>
       </Sider>
-      <Layout style={{ background: isNightMode ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
+      <Layout style={{ background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
         <Header
           style={{
-            background: isNightMode ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
+            background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
             borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1',
           }}
         >
@@ -81,13 +79,13 @@ const HomePage: React.FC = () => {
         <Content
           style={{
             height: '100%',
-            background: isNightMode ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
+            background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
             borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1',
           }}
         >
           聊天框
         </Content>
-        <Footer style={{ height: '200px', background: isNightMode ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
+        <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
           输入框
         </Footer>
       </Layout>
