@@ -19,7 +19,7 @@ import type { CSSProperties } from 'react';
 import React, { useState, useEffect } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 type LoginType = 'email' | 'account';
 
@@ -59,7 +59,7 @@ export default () => {
       if (token) {
         localStorage.setItem('authToken', token);
         setTimeout(() => {
-          window.location.href = '/';
+          navigate('/');
         }, 1000);
       } else {
         message.error('登录失败，未收到Token！');
@@ -206,26 +206,29 @@ export default () => {
               },
             ]}
           />
-          <div
+
+          <div style={{ marginBlockEnd: 12, textAlign: 'right' }}>
+            <Link to='/auth/register'>还没有账号？立即注册</Link>
+          </div>
+
+          {/* <div
             style={{
               marginBlockEnd: 24,
             }}
           >
-            {false && (
-              <>
-                <ProFormCheckbox noStyle name='autoLogin'>
-                  自动登录
-                </ProFormCheckbox>
-                <a
-                  style={{
-                    float: 'right',
-                  }}
-                >
-                  忘记密码
-                </a>
-              </>
-            )}
-          </div>
+            <>
+              <ProFormCheckbox noStyle name='autoLogin'>
+                自动登录
+              </ProFormCheckbox>
+              <a
+                style={{
+                  float: 'right',
+                }}
+              >
+                忘记密码
+              </a>
+            </>
+          </div> */}
         </LoginForm>
       </div>
     </ProConfigProvider>

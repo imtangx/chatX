@@ -12,10 +12,12 @@ import type { CSSProperties } from 'react';
 import React, { useState } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default () => {
   const { message } = App.useApp();
   const { token } = theme.useToken();
+  const navigate = useNavigate();
 
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
@@ -36,7 +38,11 @@ export default () => {
       const registerBackendUrl = 'http://localhost:3001/auth/register';
       const response = await axios.post(registerBackendUrl, apiPayload);
       console.log('注册成功，后端响应数据:', response.data);
-      message.success('注册成功！');
+      message.success('注册成功，请前往登录！');
+
+      setTimeout(() => {
+        navigate('/auth/login');
+      }, 1000);
     } catch (err) {
       console.error('注册失败，请求出错:', err);
       message.error('注册失败，请稍后重试！');

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
 import { LeftSider } from '../components/Sidebar';
+import { useNavigate } from 'react-router-dom';
 
 const { Header, Footer, Sider, Content } = Layout;
 
 const HomePage: React.FC = () => {
   const [activeItem, setActiveItem] = useState<string>('chat');
   const [isNightMode, setIsNightMode] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const handleItemClick = (id: string) => {
     setActiveItem(id);
@@ -19,7 +21,7 @@ const HomePage: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
-    window.location.href = '/auth/login';
+    navigate('/auth/login');
   };
 
   return (
