@@ -1,7 +1,14 @@
 import React from 'react';
-import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, NightModeGrey, NightModeBlue } from '../../assets';
-import { LogoutOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import {
+  Avatar,
+  BubbleGrey,
+  BubbleBlue,
+  ContactsGrey,
+  ContactsBlue,
+  NightModeGrey,
+  NightModeBlue,
+  LogoutGrey,
+} from '../../assets';
 import { MenuItem } from '@chatx/types';
 
 interface LeftSiderProps {
@@ -12,9 +19,11 @@ interface LeftSiderProps {
   handleLogout: () => void;
 }
 
-const defaultMenuItems: MenuItem[] = [
+const MenuItems: MenuItem[] = [
   { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
   { id: 'contacts', label: '联系人', icon: ContactsGrey, iconSelected: ContactsBlue },
+  { id: 'nightMode', label: '夜间模式', icon: NightModeGrey, iconSelected: NightModeBlue },
+  { id: 'logout', label: '登出', icon: LogoutGrey, iconSelected: LogoutGrey },
 ];
 
 const LeftSider: React.FC<LeftSiderProps> = ({
@@ -35,16 +44,18 @@ const LeftSider: React.FC<LeftSiderProps> = ({
         background: isNightMode ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)',
       }}
     >
-      <div style={{ margin: '30px 0' }}>
+      <div style={{ borderRadius: '50%', margin: '30px 0', overflow: 'hidden' }}>
         <img src={Avatar} alt='Avatar' style={{ width: '100%', height: '100%' }} />
       </div>
 
-      <Button icon={<LogoutOutlined />} onClick={handleLogout} style={{ cursor: "pointer", float: 'right' }}>
-        登出
-      </Button>
-
-      {defaultMenuItems.map(item => (
-        <div key={item.id} onClick={() => handleItemClick(item.id)} style={{ cursor: 'pointer', margin: '15px 2px' }}>
+      {MenuItems.slice(0, 2).map(item => (
+        <div
+          key={item.id}
+          onClick={() => {
+            handleItemClick(item.id);
+          }}
+          style={{ cursor: 'pointer', margin: '15px 0', width: '80%' }}
+        >
           <img
             src={activeItem === item.id ? item.iconSelected : item.icon}
             alt={item.label}
@@ -53,13 +64,20 @@ const LeftSider: React.FC<LeftSiderProps> = ({
         </div>
       ))}
 
-      <div style={{ marginBottom: '30px', marginTop: 'auto', cursor: 'pointer' }}>
+      {/** 填满中间空白区域 */}
+      <div style={{ flexGrow: '1' }}></div>
+
+      <div style={{ cursor: 'pointer', width: '80%', margin: '15px 0' }}>
         <img
           src={isNightMode ? NightModeBlue : NightModeGrey}
           alt='NightMode'
           style={{ width: '100%', height: '100%' }}
           onClick={handleNightModeToggle}
         />
+      </div>
+
+      <div style={{ cursor: 'pointer', width: '80%', margin: '15px 0' }}>
+        <img src={LogoutGrey} alt='Logout' style={{ width: '100%', height: '100%' }} onClick={handleLogout} />
       </div>
     </div>
   );
