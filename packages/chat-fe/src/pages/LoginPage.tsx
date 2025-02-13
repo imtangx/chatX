@@ -53,6 +53,8 @@ export default () => {
       const loginBackendUrl = 'http://localhost:3001/auth/login';
       const response = await axios.post(loginBackendUrl, apiPayload);
       console.log('登录成功，后端响应数据:', response.data);
+      localStorage.setItem('username', values.username);
+      localStorage.setItem('userId', response.data.user.id);
       message.success('登录成功！');
 
       const token = response.data.token;

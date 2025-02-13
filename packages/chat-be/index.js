@@ -31,9 +31,11 @@ app.post('/auth/register', async (req, res) => {
     // const hashedPassword = await bcrypt.hash(password, 10);
     const hashedPassword = password;
 
-    const [result] = await pool.execute('INSERT INTO users (username, password) VALUES (?, ?)', [
+    const defaultAvatarUrl = `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`;
+    const [result] = await pool.execute('INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)', [
       username,
       hashedPassword,
+      defaultAvatarUrl,
     ]);
 
     const userId = result.insertId; // 获取新插入用户的 ID
@@ -49,6 +51,7 @@ app.post('/auth/register', async (req, res) => {
       user: {
         id: userId,
         username: username,
+        avatar: defaultAvatarUrl,
       },
       token,
     });
@@ -95,6 +98,42 @@ app.post('/auth/login', async (req, res) => {
   } catch (err) {
     console.error('登录验证出错：', err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: '服务器内部错误' });
+  }
+});
+
+app.get('/friends/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // 查询所有发给当前用户的accept请求作为朋友
+    const [requests] = await pool.query(
+      `
+      SELECT 
+        f.id AS request_id,
+        u.id AS sender_id,
+        u.username,
+        u.avatar,
+        f.status,
+        f.created_at
+      FROM friends f
+      JOIN users u ON f.user_id = u.id
+      WHERE f.friend_id = ? 
+        AND f.status = 'accepted'
+    `,
+      [userId]
+    );
+
+    console.log(requests);
+    const result = requests.map(item => ({
+      id: item.sender_id,
+      username: item.username,
+      avatar: item.avatar,
+    }))
+
+    res.json({ result });
+  } catch (err) {
+    console.error('数据库错误:', err);
+    res.status(500).json({ error: '查询失败' });
   }
 });
 

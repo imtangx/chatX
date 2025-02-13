@@ -1,5 +1,6 @@
 import React from 'react';
-import { Avatar, BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, LogoutGrey } from '../../assets';
+import { BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, LogoutGrey } from '../../assets';
+import { Avatar } from 'antd';
 import { MenuItem } from '@chatx/types';
 
 interface LeftSiderProps {
@@ -15,6 +16,7 @@ const MenuItems: MenuItem[] = [
 ];
 
 const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {
+  const avatarUrl = `https://api.dicebear.com/7.x/miniavs/svg?seed=${localStorage.getItem('username')}`;
   return (
     <div
       style={{
@@ -26,8 +28,8 @@ const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemCli
         background: isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)',
       }}
     >
-      <div style={{ borderRadius: '50%', margin: '30px 0', overflow: 'hidden' }}>
-        <img src={Avatar} alt='Avatar' style={{ width: '100%', height: '100%' }} />
+      <div style={{ width: '80%', margin: '15px 0' }}>
+        <Avatar src={avatarUrl} style={{ height: '100%', width: '100%' }} />
       </div>
 
       {MenuItems.slice(0, 2).map(item => (

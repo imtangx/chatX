@@ -22,6 +22,8 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userId');
     navigate('/auth/login');
   };
 
