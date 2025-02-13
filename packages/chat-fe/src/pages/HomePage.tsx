@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
-import { LeftSider } from '../components/Sidebar';
+import { ChatList, LeftSider, ContactList } from '../components/Sidebar';
+import { ChatWindow } from '../components/Chat';
+import { ContactRequestWindow } from '../components/Contact';
 import { useNavigate } from 'react-router-dom';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -37,7 +39,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
         width='25%'
         style={{
           background: isDark ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
-          borderRight: '1px solid rgba(0, 0, 0, 0.1',
+          borderRight: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
         <Layout style={{ height: '100%' }}>
@@ -63,32 +65,13 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
             </div>
           </Header>
           <Content style={{ background: isDark ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
-            信息栏
+            {activeItem === 'chat' && <ChatList></ChatList>}
+            {activeItem === 'contacts' && <ContactList></ContactList>}
           </Content>
         </Layout>
       </Sider>
-      <Layout style={{ background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
-        <Header
-          style={{
-            background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
-            borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1',
-          }}
-        >
-          用户名
-        </Header>
-        <Content
-          style={{
-            height: '100%',
-            background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)',
-            borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1',
-          }}
-        >
-          聊天框
-        </Content>
-        <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
-          输入框
-        </Footer>
-      </Layout>
+      {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
+      {activeItem === 'contacts' && <ContactRequestWindow isDark={isDark}></ContactRequestWindow>}
     </Layout>
   );
 };
