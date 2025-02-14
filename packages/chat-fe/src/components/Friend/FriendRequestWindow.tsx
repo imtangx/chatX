@@ -4,7 +4,7 @@ import { CheckCircleFilled, CloseCircleFilled, SendOutlined } from '@ant-design/
 const { Header, Footer, Sider, Content } = Layout;
 import axios from 'axios';
 
-interface FriendRequestProps {
+interface FriendRequestWindowProps {
   isDark: boolean;
 }
 
@@ -15,7 +15,7 @@ interface FriendRequest {
   status: string;
 }
 
-const FriendRequest: React.FC<FriendRequestProps> = ({ isDark }) => {
+const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => {
   const [friendRequests, setFriendsRequests] = useState<FriendRequest[]>([]);
   const [usernameInput, setUsernameInput] = useState<string>('');
   const loadFriendsRequest = async () => {
@@ -154,4 +154,4 @@ const FriendRequest: React.FC<FriendRequestProps> = ({ isDark }) => {
   );
 };
 
-export default FriendRequest;
+export default FriendRequestWindow;

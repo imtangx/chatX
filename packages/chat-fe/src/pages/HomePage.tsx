@@ -13,17 +13,25 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
-  const [activeItem, setActiveItem] = useState<string>('chat');
+  const getInitActiveItem = () => {
+    const storedActiveItem = localStorage.getItem('activeItem');
+    return storedActiveItem ? JSON.parse(storedActiveItem) : 'chat';
+  }
+  const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
   const navigate = useNavigate();
 
   const handleItemClick = (id: string) => {
-    setActiveItem(id);
+    setActiveItem(prevActiveItem => {
+      localStorage.setItem('activeItem', JSON.stringify(id));
+      return id;
+    })
   };
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     localStorage.removeItem('userId');
+    localStorage.removeItem('activeItem');
     navigate('/auth/login');
   };
 
