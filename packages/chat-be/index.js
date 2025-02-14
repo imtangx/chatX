@@ -105,35 +105,96 @@ app.get('/friends/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // 查询所有发给当前用户的accept请求作为朋友
-    const [requests] = await pool.query(
+    /** 查询此用户所有accepted状态的friendships */
+    const [friends] = await pool.query(
       `
       SELECT 
-        f.id AS request_id,
-        u.id AS sender_id,
+        u.id,
         u.username,
-        u.avatar,
-        f.status,
-        f.created_at
-      FROM friends f
-      JOIN users u ON f.user_id = u.id
-      WHERE f.friend_id = ? 
-        AND f.status = 'accepted'
-    `,
-      [userId]
+        u.avatar
+      FROM friendships fs JOIN users u ON 
+      (
+        (fs.user_id_1 = ? AND fs.user_id_2 = u.id) OR
+        (fs.user_id_2 = ? AND fs.user_id_1 = u.id)
+      )
+      WHERE fs.status = 'accepted' AND u.id != ?
+      `,
+      [userId, userId, userId]
     );
 
-    console.log(requests);
-    const result = requests.map(item => ({
-      id: item.sender_id,
-      username: item.username,
-      avatar: item.avatar,
-    }));
-
-    res.json({ result });
+    res.json({ friends });
   } catch (err) {
     console.error('数据库错误:', err);
     res.status(500).json({ error: '查询失败' });
+  }
+});
+
+app.post('/friends/requests/:userId', async (req, res) => {
+  try {
+    const senderUserId = req.params.userId;
+    const { receiverUsername } = req.body;
+
+    // **1. 查找接收者用户是否存在**
+    const [receiverUsers] = await pool.execute('SELECT * FROM users WHERE username = ?', [receiverUsername]);
+
+    if (receiverUsers.length === 0) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: '此用户不存在' }); // 404 Not Found
+    }
+    const receiverUser = receiverUsers[0];
+    const receiverUserId = receiverUser.id;
+
+    if (Number(senderUserId) === receiverUserId) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: '不能向自己发送好友请求' });
+    }
+
+    // **2. 检查是否已存在好友关系或待处理的请求**
+    const [existingRequests] = await pool.execute(
+      `
+      SELECT * 
+      FROM friendships
+      WHERE (user_id_1 = ? AND user_id_2 = ?) OR (user_id_1 = ? AND user_id_2 = ?)
+      `,
+      [
+        Math.min(senderUserId, receiverUserId),
+        Math.max(senderUserId, receiverUserId),
+        Math.min(receiverUserId, senderUserId),
+        Math.max(receiverUserId, senderUserId),
+      ] /** 保证id对大小关系 */
+    );
+
+    if (existingRequests.length > 0) {
+      const existingRequest = existingRequests[0];
+      let message = '';
+      if (existingRequest.status === 'accepted') {
+        message = '你们已经是好友，无需重复添加';
+      } else if (existingRequest.status === 'rejected') {
+        message = '好友请求已被拒绝，无法再添加对方';
+      } else if (existingRequest.status === 'pending') {
+        message = '好友请求待处理中';
+      }
+
+      return res.status(StatusCodes.CONFLICT).json({ message: message }); // 409 Conflict
+    }
+
+    // **3. 创建新的好友请求**
+    const [result] = await pool.execute('INSERT INTO friendships (user_id_1, user_id_2, status, last_sender_id) VALUES (?, ?, ?, ?)', [
+      Math.min(senderUserId, receiverUserId),
+      Math.max(senderUserId, receiverUserId),
+      'pending',
+      senderUserId,
+    ]);
+
+    const requestId = result.insertId;
+
+    // **4. 返回成功响应**
+    res.status(StatusCodes.CREATED).json({
+      message: '好友请求已发送',
+      requestId: requestId,
+      receiverUser: { id: receiverUserId, username: receiverUsername, avatar: receiverUser.avatar },
+    }); // 201 Created
+  } catch (err) {
+    console.error('发送好友请求出错:', err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: '服务器内部错误' });
   }
 });
 
@@ -142,31 +203,24 @@ app.get('/friends/requests/:userId', async (req, res) => {
     const userId = req.params.userId;
 
     // 查询所有发给当前用户的请求
-    const [requests] = await pool.query(
+    const [AllFriendRequests] = await pool.query(
       `
       SELECT 
-        f.id AS request_id,
-        u.id AS sender_id,
+        fs.id,
         u.username,
         u.avatar,
-        f.status,
-        f.created_at
-      FROM friends f
-      JOIN users u ON f.user_id = u.id
-      WHERE f.friend_id = ? 
+        fs.status
+      FROM friendships fs JOIN users u ON 
+      (
+        (fs.user_id_1 = ? AND fs.user_id_2 = u.id) OR
+        (fs.user_id_2 = ? AND fs.user_id_1 = u.id)
+      )
+      WHERE fs.last_sender_id != ?
     `,
-      [userId]
+      [userId, userId, userId]
     );
 
-    console.log(requests);
-    const result = requests.map(item => ({
-      id: item.sender_id,
-      username: item.username,
-      avatar: item.avatar,
-      status: item.status,
-    }));
-
-    res.json({ result });
+    res.json({ AllFriendRequests });
   } catch (err) {
     console.error('数据库错误:', err);
     res.status(500).json({ error: '查询失败' });
@@ -179,13 +233,13 @@ app.patch('/friends/requests/:requestId', async (req, res) => {
     const { newStatus } = req.body;
 
     // 查询好友请求是否存在
-    const [existingRequests] = await pool.execute('SELECT * FROM friends WHERE id = ?', [requestId]);
+    const [existingRequests] = await pool.execute('SELECT * FROM friendships WHERE id = ?', [requestId]);
     if (existingRequests.length === 0) {
       return res.status(StatusCodes.NOT_FOUND).json({ message: '好友请求不存在' });
     }
 
     // 更新数据库 friends 表的 status 字段
-    const [result] = await pool.execute('UPDATE friends SET status = ? WHERE id = ?', [newStatus, requestId]);
+    const [result] = await pool.execute('UPDATE friendships SET status = ? WHERE id = ?', [newStatus, requestId]);
 
     res.status(StatusCodes.OK).json({ message: '好友请求状态更新成功', requestId: requestId, newStatus: newStatus });
   } catch (error) {

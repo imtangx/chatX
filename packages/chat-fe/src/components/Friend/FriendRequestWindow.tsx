@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, List, Card, Avatar, Tag, Input, Button } from 'antd';
+import { Layout, List, Card, Avatar, Tag, Input, Button, Form } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, SendOutlined } from '@ant-design/icons';
 const { Header, Footer, Sider, Content } = Layout;
 import axios from 'axios';
@@ -9,7 +9,7 @@ interface FriendRequestProps {
 }
 
 interface FriendRequest {
-  id: string;
+  id: number;
   username: string;
   avatar: string;
   status: string;
@@ -17,21 +17,32 @@ interface FriendRequest {
 
 const FriendRequest: React.FC<FriendRequestProps> = ({ isDark }) => {
   const [friendRequests, setFriendsRequests] = useState<FriendRequest[]>([]);
+  const [usernameInput, setUsernameInput] = useState<string>('');
   const loadFriendsRequest = async () => {
     const res = await axios.get(`http://localhost:3001/friends/requests/${localStorage.getItem('userId')}`);
-    setFriendsRequests(res.data.result);
+    setFriendsRequests(res.data.AllFriendRequests);
   };
 
   useEffect(() => {
     loadFriendsRequest();
   }, []);
 
-  const handleSendRequest = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('^^');
+  const handleSendFriendRequest = async () => {
+    const receiverUsername = usernameInput;
+    try {
+      const res = await axios.post(`http://localhost:3001/friends/requests/${localStorage.getItem('userId')}`, {
+        receiverUsername: receiverUsername,
+      });
+
+      console.log('好友请求发送成功', res.data);
+      setUsernameInput('');
+    } catch (err) {
+      console.error('发送好友请求失败', err);
+    }
   };
 
-  const handleAcceptRequest = async (reqId: string) => {
+  const handleAcceptRequest = async (reqId: number) => {
+    console.log(reqId);
     try {
       const res = await axios.patch(`http://localhost:3001/friends/requests/${reqId}`, {
         newStatus: 'accepted',
@@ -43,7 +54,7 @@ const FriendRequest: React.FC<FriendRequestProps> = ({ isDark }) => {
     }
   };
 
-  const handleRejectRequest = async (reqId: string) => {
+  const handleRejectRequest = async (reqId: number) => {
     try {
       const res = await axios.patch(`http://localhost:3001/friends/requests/${reqId}`, {
         newStatus: 'rejected',
@@ -122,12 +133,22 @@ const FriendRequest: React.FC<FriendRequestProps> = ({ isDark }) => {
         ></List>
       </Content>
       <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
-        <form style={{ display: 'flex' }} onSubmit={handleSendRequest}>
-          <Input type='text' placeholder='输入对方账号' variant='filled'></Input>
-          <Button type='primary' htmlType='submit' icon={<SendOutlined />} style={{ marginLeft: '5px' }}>
-            发送好友请求
-          </Button>
-        </form>
+        <Form style={{ display: 'flex' }} onFinish={handleSendFriendRequest}>
+          <Form.Item name='username' rules={[{ required: true, message: '请输入！' }]} style={{ flexGrow: 1 }}>
+            <Input
+              type='text'
+              placeholder='输入对方账号'
+              variant='filled'
+              value={usernameInput}
+              onChange={e => setUsernameInput(e.target.value)}
+            ></Input>
+          </Form.Item>
+          <Form.Item>
+            <Button type='primary' htmlType='submit' icon={<SendOutlined />} style={{ marginLeft: '5px' }}>
+              发送好友请求
+            </Button>
+          </Form.Item>
+        </Form>
       </Footer>
     </Layout>
   );

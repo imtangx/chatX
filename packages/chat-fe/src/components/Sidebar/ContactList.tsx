@@ -16,7 +16,7 @@ const ContactList = () => {
   useEffect(() => {
     const loadFriends = async () => {
       const res = await axios.get(`http://localhost:3001/friends/${localStorage.getItem('userId')}`);
-      setFriends(res.data.result);
+      setFriends(res.data.friends);
     };
     loadFriends();
   }, []);
