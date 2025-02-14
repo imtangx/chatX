@@ -3,7 +3,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
 import { ChatList, LeftSider, ContactList } from '../components/Sidebar';
 import { ChatWindow } from '../components/Chat';
-import { ContactRequestWindow } from '../components/Contact';
+import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -73,7 +73,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
         </Layout>
       </Sider>
       {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
-      {activeItem === 'contacts' && <ContactRequestWindow isDark={isDark}></ContactRequestWindow>}
+      {activeItem === 'contacts' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
     </Layout>
   );
 };
