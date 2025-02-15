@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import PrivateRoute from './components/Private/PrivateRoute';
 import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import './App.css';
+import { DialogProvider } from './context/DialogContext';
 
 function App() {
   const getInitIsDark = () => {
@@ -24,35 +25,37 @@ function App() {
   return (
     <BrowserRouter>
       <AntdApp>
-        <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-          {/* 使用 ConfigProvider 包裹 Routes，根据 isDark 切换主题 */}
-          <button
-            onClick={() => handleIsDarkToggle()}
-            style={{
-              background: isDark ? 'rgb(50, 50, 50)' : 'rgb(220, 220, 220)',
-              position: 'fixed',
-              top: 15,
-              right: 15,
-              zIndex: 1000,
-            }}
-          >
-            {isDark ? '🌙' : '🌞'}
-          </button>
-          <Routes>
-            <Route path='/auth/login' element={<LoginPage />} />
-            <Route path='/auth/register' element={<RegisterPage />} />
-            <Route
-              path='/'
-              element={
-                <PrivateRoute>
-                  {' '}
-                  {/** 路由守卫包裹HomePage组件 */}
-                  <HomePage isDark={isDark} />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-        </ConfigProvider>
+        <DialogProvider>
+          <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+            {/* 使用 ConfigProvider 包裹 Routes，根据 isDark 切换主题 */}
+            <button
+              onClick={() => handleIsDarkToggle()}
+              style={{
+                background: isDark ? 'rgb(50, 50, 50)' : 'rgb(220, 220, 220)',
+                position: 'fixed',
+                top: 15,
+                right: 15,
+                zIndex: 1000,
+              }}
+            >
+              {isDark ? '🌙' : '🌞'}
+            </button>
+            <Routes>
+              <Route path='/auth/login' element={<LoginPage />} />
+              <Route path='/auth/register' element={<RegisterPage />} />
+              <Route
+                path='/'
+                element={
+                  <PrivateRoute>
+                    {' '}
+                    {/** 路由守卫包裹HomePage组件 */}
+                    <HomePage isDark={isDark} />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ConfigProvider>
+        </DialogProvider>
       </AntdApp>
     </BrowserRouter>
   );

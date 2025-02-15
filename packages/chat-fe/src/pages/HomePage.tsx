@@ -32,6 +32,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
     localStorage.removeItem('username');
     localStorage.removeItem('userId');
     localStorage.removeItem('activeItem');
+    localStorage.removeItem('activeDialog');
     navigate('/auth/login');
   };
 

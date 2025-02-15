@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Avatar, List, Card, Tag } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { useDialog } from '../../context/DialogContext';
 
 interface Dialog {
   id: number;
@@ -42,18 +43,10 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
     },
   ];
 
-  const getInitActiveDialog = () => {
-    const storedActiveDialog = localStorage.getItem('activeDialog');
-    return storedActiveDialog ? JSON.parse(storedActiveDialog) : dialogs[0].id;
-  };
+  const { activeDialog, setActiveDialog } = useDialog();
 
-  const [activeDialog, setActiveDialog] = useState<number>(getInitActiveDialog);
-  const handleDialogClick = (id: number) => {
-    setActiveDialog(prevActiveDialog => {
-      const newActiveDialog = id;
-      localStorage.setItem('activeDialog', JSON.stringify(newActiveDialog));
-      return newActiveDialog;
-    });
+  const handleDialogClick = (username: string) => {
+    setActiveDialog(username);
   };
 
   return (
@@ -64,10 +57,10 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
         <List.Item
           key={dialog.id}
           style={{
-            background: activeDialog === dialog.id ? (isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)') : 'inherit',
+            background: activeDialog === dialog.username ? (isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)') : 'inherit',
             cursor: 'pointer',
           }}
-          onClick={() => handleDialogClick(dialog.id)}
+          onClick={() => handleDialogClick(dialog.username)}
         >
           <Card style={{ width: '100%', margin: '0 16px', background: 'inherit' }}>
             <Card.Meta
