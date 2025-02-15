@@ -1,5 +1,5 @@
 import React from 'react';
-import { BubbleGrey, BubbleBlue, ContactsGrey, ContactsBlue, LogoutGrey } from '../../assets';
+import { BubbleGrey, BubbleBlue, FriendsGrey, FriendsBlue, LogoutGrey } from '../../assets';
 import { Avatar } from 'antd';
 import { MenuItem } from '@chatx/types';
 
@@ -12,7 +12,7 @@ interface LeftSiderProps {
 
 const MenuItems: MenuItem[] = [
   { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
-  { id: 'contacts', label: '联系人', icon: ContactsGrey, iconSelected: ContactsBlue },
+  { id: 'friends', label: '朋友', icon: FriendsGrey, iconSelected: FriendsBlue },
 ];
 
 const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {

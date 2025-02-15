@@ -10,7 +10,7 @@ interface Friend {
   // isOnline: boolean;
 }
 
-const ContactList = () => {
+const FriendList = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
 
   useEffect(() => {
@@ -24,7 +24,6 @@ const ContactList = () => {
   return (
     <List
       style={{ width: '100%', height: '100%', overflow: 'auto' }}
-      // header={<div style={{ fontWeight: 'bold', padding: '0 16px' }}>联系人列表</div>}
       dataSource={friends}
       renderItem={user => (
         <List.Item key={user.id}>
@@ -52,4 +51,4 @@ const ContactList = () => {
   );
 };
 
-export default ContactList;
+export default FriendList;

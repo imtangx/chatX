@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
-import { ChatList, LeftSider, ContactList } from '../components/Sidebar';
+import { ChatList, LeftSider, FriendList } from '../components/Sidebar';
 import { ChatWindow } from '../components/Chat';
 import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
@@ -76,12 +76,12 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
           </Header>
           <Content style={{ background: isDark ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
             {activeItem === 'chat' && <ChatList></ChatList>}
-            {activeItem === 'contacts' && <ContactList></ContactList>}
+            {activeItem === 'friends' && <FriendList></FriendList>}
           </Content>
         </Layout>
       </Sider>
       {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
-      {activeItem === 'contacts' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
+      {activeItem === 'friends' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
     </Layout>
   );
 };
