@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
 import { DialogList, LeftSider, FriendList } from '../components/Sidebar';
@@ -17,8 +17,34 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
     const storedActiveItem = localStorage.getItem('activeItem');
     return storedActiveItem ? JSON.parse(storedActiveItem) : 'chat';
   };
-  const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
   const navigate = useNavigate();
+  const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
+  const username = localStorage.getItem('username');
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+
+  useEffect(() => {
+    const socket = new WebSocket(`ws://localhost:3001?username=${encodeURIComponent(username!)}`);
+    setSocket(socket);
+
+    socket.onopen = () => {
+      console.log('Websocket连接成功');
+      socket.send(JSON.stringify('lala'));
+    };
+
+    socket.onmessage = event => {
+      console.log('收到消息：', event.data);
+    };
+
+    socket.onclose = () => {
+      console.log('Websocket连接关闭');
+    };
+    
+    return () => {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [username]);
 
   const handleItemClick = (id: string) => {
     setActiveItem(prevActiveItem => {

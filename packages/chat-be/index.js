@@ -4,12 +4,43 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import cors from 'cors';
+import { WebSocketServer } from 'ws';
 
 const app = express();
 const port = 3001;
 
 app.use(express.json());
 app.use(cors());
+
+const wss = new WebSocketServer({ noServer: true });
+
+const connections = new Map();
+
+wss.on('connection', (ws, req) => {
+  const urlParams = new URL(req.url, 'http://localhost:3001').searchParams;
+  const username = urlParams.get('username');
+
+  if (username) {
+    connections.set(username, ws);
+    console.log(`用户${username}连接成功`);
+  } else {
+    console.error('无效用户连接');
+  }
+
+  ws.on('message', message => {
+    console.log(`收到${username}发来的消息：`, JSON.parse(message));
+    /** 处理聊天信息 */
+  });
+
+  ws.on('close', () => {
+    if (connections.has(username)) {
+      connections.delete(username);
+      console.log(`用户 ${username} 断开连接`);
+    } else {
+      console.error(`无效用户断开`);
+    }
+  });
+});
 
 const pool = mysql.createPool({
   host: 'localhost',
@@ -177,12 +208,10 @@ app.post('/friends/requests/:userId', async (req, res) => {
     }
 
     // **3. 创建新的好友请求**
-    const [result] = await pool.execute('INSERT INTO friendships (user_id_1, user_id_2, status, last_sender_id) VALUES (?, ?, ?, ?)', [
-      Math.min(senderUserId, receiverUserId),
-      Math.max(senderUserId, receiverUserId),
-      'pending',
-      senderUserId,
-    ]);
+    const [result] = await pool.execute(
+      'INSERT INTO friendships (user_id_1, user_id_2, status, last_sender_id) VALUES (?, ?, ?, ?)',
+      [Math.min(senderUserId, receiverUserId), Math.max(senderUserId, receiverUserId), 'pending', senderUserId]
+    );
 
     const requestId = result.insertId;
 
@@ -248,6 +277,12 @@ app.patch('/friends/requests/:requestId', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`后端服务成功在 ${port} 端口启动`);
+});
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, ws => {
+    wss.emit('connection', ws, request);
+  });
 });
