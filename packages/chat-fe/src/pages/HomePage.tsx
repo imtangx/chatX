@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
-import { ChatList, LeftSider, FriendList } from '../components/Sidebar';
+import { DialogList, LeftSider, FriendList } from '../components/Sidebar';
 import { ChatWindow } from '../components/Chat';
 import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   const getInitActiveItem = () => {
     const storedActiveItem = localStorage.getItem('activeItem');
     return storedActiveItem ? JSON.parse(storedActiveItem) : 'chat';
-  }
+  };
   const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
   const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
     setActiveItem(prevActiveItem => {
       localStorage.setItem('activeItem', JSON.stringify(id));
       return id;
-    })
+    });
   };
 
   const handleLogout = () => {
@@ -37,7 +37,13 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
 
   return (
     <Layout style={{ height: '100vh' }}>
-      <Sider width='5%' style={{ background: isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)' }}>
+      <Sider
+        width='5%'
+        style={{
+          background: isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)',
+          borderRight: '1px solid rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <LeftSider
           activeItem={activeItem}
           isDark={isDark}
@@ -75,7 +81,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
             </div>
           </Header>
           <Content style={{ background: isDark ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
-            {activeItem === 'chat' && <ChatList></ChatList>}
+            {activeItem === 'chat' && <DialogList isDark={isDark}></DialogList>}
             {activeItem === 'friends' && <FriendList></FriendList>}
           </Content>
         </Layout>
