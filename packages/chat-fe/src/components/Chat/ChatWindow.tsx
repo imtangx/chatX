@@ -1,6 +1,7 @@
 import React from 'react';
 import { Layout } from 'antd';
 import { useDialog } from '../../context/DialogContext';
+import { MessageInputBox, MessageList } from './';
 const { Header, Footer, Sider, Content } = Layout;
 
 interface ChatWindowProps {
@@ -27,9 +28,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
           borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
-        聊天框
+        <MessageList></MessageList>
       </Content>
-      <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>输入框</Footer>
+      <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)', padding: '15px'}}>
+        <MessageInputBox></MessageInputBox>
+      </Footer>
     </Layout>
   );
 };
