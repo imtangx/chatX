@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Input } from 'antd';
 
-const MessageInputBox = () => {
+interface MessageInputBoxProps {
+  handleSendMessage: (message: string) => void;
+}
+
+const MessageInputBox: React.FC<MessageInputBoxProps> = ({ handleSendMessage }) => {
   const [messageInput, setMessageInput] = useState<string>('');
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageInput(e.target.value);
   };
 
-  const handleSendMessage = (e: React.KeyboardEvent) => {
+  const handlePressEnter = (e: React.KeyboardEvent) => {
     e.preventDefault();
     if (messageInput.trim()) {
-      console.log('发送消息:', messageInput);
+      handleSendMessage(messageInput);
       setMessageInput('');
     }
   };
@@ -23,7 +27,7 @@ const MessageInputBox = () => {
         style={{ height: '100%' }}
         value={messageInput}
         onChange={handleMessageChange}
-        onPressEnter={handleSendMessage}
+        onPressEnter={handlePressEnter}
       ></Input.TextArea>
     </div>
   );

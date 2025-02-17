@@ -3,13 +3,26 @@ import { Layout } from 'antd';
 import { useDialog } from '../../context/DialogContext';
 import { MessageInputBox, MessageList } from './';
 const { Header, Footer, Sider, Content } = Layout;
+import { Message } from '@chatx/types';
 
 interface ChatWindowProps {
   isDark: boolean;
+  socket: WebSocket;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ isDark, socket }) => {
   const { activeDialog } = useDialog();
+
+  const handleSendMessage = (text: string) => {
+    if (socket.readyState === WebSocket.OPEN) {
+      const message: Message = {
+        text,
+        sender: localStorage.getItem('username')!,
+        receiver: activeDialog!,
+      };
+      socket.send(JSON.stringify(message));
+    }
+  };
 
   return (
     <Layout style={{ background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)' }}>
@@ -28,10 +41,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
           borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
-        <MessageList></MessageList>
+        <MessageList activeDialog={activeDialog!}></MessageList>
       </Content>
-      <Footer style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)', padding: '15px'}}>
-        <MessageInputBox></MessageInputBox>
+      <Footer
+        style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)', padding: '15px' }}
+      >
+        <MessageInputBox handleSendMessage={handleSendMessage}></MessageInputBox>
       </Footer>
     </Layout>
   );

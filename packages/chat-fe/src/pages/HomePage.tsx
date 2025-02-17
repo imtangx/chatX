@@ -28,7 +28,6 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
 
     socket.onopen = () => {
       console.log('Websocket连接成功');
-      socket.send(JSON.stringify('lala'));
     };
 
     socket.onmessage = event => {
@@ -113,7 +112,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
           </Content>
         </Layout>
       </Sider>
-      {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
+      {activeItem === 'chat' && <ChatWindow isDark={isDark} socket={socket!}></ChatWindow>}
       {activeItem === 'friends' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
     </Layout>
   );
