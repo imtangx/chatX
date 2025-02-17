@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, List, Card, Tag } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { useDialog } from '../../context/DialogContext';
+import axios from 'axios';
 
 interface Dialog {
   id: number;
   username: string;
   avatar: string;
-  lastMessage: string;
+  // lastMessage: string;
   // isOnline: boolean;
 }
 
@@ -16,32 +17,15 @@ interface DialogListProps {
 }
 
 const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
-  const dialogs: Dialog[] = [
-    {
-      id: 1,
-      username: '张三',
-      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=1`,
-      lastMessage: '我们已经是朋友啦！',
-    },
-    {
-      id: 2,
-      username: '李四',
-      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=2`,
-      lastMessage: '我们已经是朋友啦！',
-    },
-    {
-      id: 3,
-      username: '王五',
-      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=3`,
-      lastMessage: '我们已经是朋友啦！',
-    },
-    {
-      id: 4,
-      username: '赵六',
-      avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=4`,
-      lastMessage: '我们已经是朋友啦！',
-    },
-  ];
+  const [dialogs, setDialogs] = useState<Dialog[]>([]);
+
+  useEffect(() => {
+    const loadDialogs = async () => {
+      const res = await axios.get(`http://localhost:3001/friends/${localStorage.getItem('userId')}`);
+      setDialogs(res.data.friends);
+    };
+    loadDialogs();
+  }, []);
 
   const { activeDialog, setActiveDialog } = useDialog();
 
@@ -57,7 +41,8 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
         <List.Item
           key={dialog.id}
           style={{
-            background: activeDialog === dialog.username ? (isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)') : 'inherit',
+            background:
+              activeDialog === dialog.username ? (isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)') : 'inherit',
             cursor: 'pointer',
           }}
           onClick={() => handleDialogClick(dialog.username)}
