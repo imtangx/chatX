@@ -19,7 +19,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isSelf }) => {
       <Avatar src='https://api.dicebear.com/7.x/miniavs/svg?seed=1'></Avatar>
       <div
         style={{
-          background: isSelf ? '#1296db' : '#F5F5F5',
+          background: isSelf ? '#1296db' : 'inherit',
           padding: '8px 12px',
           borderRadius: '12px',
           position: 'relative',

@@ -38,7 +38,7 @@ function App() {
                 zIndex: 1000,
               }}
             >
-              {isDark ? '🌙' : '🌞'}
+              {isDark ? '🌒' : '🌖'}
             </button>
             <Routes>
               <Route path='/auth/login' element={<LoginPage />} />
