@@ -8,8 +8,8 @@ interface Dialog {
   id: number;
   username: string;
   avatar: string;
-  // lastMessage: string;
-  // isOnline: boolean;
+  lastMessage?: string;
+  lastMessageTime?: string;
 }
 
 interface DialogListProps {
@@ -18,6 +18,7 @@ interface DialogListProps {
 
 const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
   const [dialogs, setDialogs] = useState<Dialog[]>([]);
+  const { activeDialog, setActiveDialog } = useDialog();
 
   useEffect(() => {
     const loadDialogs = async () => {
@@ -27,10 +28,24 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
     loadDialogs();
   }, []);
 
-  const { activeDialog, setActiveDialog } = useDialog();
-
   const handleDialogClick = (username: string) => {
     setActiveDialog(username);
+  };
+
+  const formatTime = (timestamp?: string) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (days === 0) {
+      return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    } else {
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}月${day}日`;
+    }
   };
 
   return (
@@ -50,18 +65,18 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
           <Card style={{ width: '100%', margin: '0 16px', background: 'inherit' }}>
             <Card.Meta
               title={
-                <div style={{ flexDirection: 'column' }}>
-                  <div>
-                    {dialog.username}
-                    <Tag
-                      style={{ marginLeft: '8px' }}
-                      icon={true ? <CheckCircleFilled /> : <CloseCircleFilled />}
-                      color={true ? 'green' : 'red'}
-                    >
-                      {true ? '在线' : '离线'}
-                    </Tag>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{dialog.username}</span>
+                    {dialog.lastMessageTime && (
+                      <span style={{ fontSize: '12px', color: '#999' }}>{formatTime(dialog.lastMessageTime)}</span>
+                    )}
                   </div>
-                  <span style={{ fontSize: '10px', color: 'grey' }}>{dialog.lastMessage}</span>
+                  {dialog.lastMessage && (
+                    <div style={{ fontSize: '13px', color: '#999', marginTop: '4px' }}>
+                      {dialog.lastMessage.length > 20 ? dialog.lastMessage.slice(0, 20) + '...' : dialog.lastMessage}
+                    </div>
+                  )}
                 </div>
               }
               avatar={<Avatar src={dialog.avatar} />}

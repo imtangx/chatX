@@ -11,9 +11,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isSelf, timestamp })
   const formatTime = (timestamp?: string) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
-      minute: '2-digit'
+    return date.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -27,7 +27,14 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isSelf, timestamp })
       }}
     >
       <Avatar src='https://api.dicebear.com/7.x/miniavs/svg?seed=1'></Avatar>
-      <div style={{ width: '100%',display: 'flex', flexDirection: 'column', alignItems: isSelf ? 'flex-end' : 'flex-start' }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: isSelf ? 'flex-end' : 'flex-start',
+        }}
+      >
         <div
           style={{
             background: isSelf ? '#1296db' : 'inherit',

@@ -169,21 +169,45 @@ app.get('/friends/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    /** 查询此用户所有accepted状态的friendships */
+    /** 查询好友列表，并获取每个好友的最后一条消息 */
     const [friends] = await pool.query(
       `
+      WITH RankedMessages AS (
+        SELECT 
+          m.*,
+          ROW_NUMBER() OVER (
+            PARTITION BY 
+              CASE 
+                WHEN m.sender = u.username THEN m.receiver 
+                ELSE m.sender 
+              END
+            ORDER BY m.created_at DESC
+          ) as rn
+        FROM users u
+        LEFT JOIN messages m ON (m.sender = u.username OR m.receiver = u.username)
+        WHERE u.id = ?
+      )
       SELECT 
         u.id,
         u.username,
-        u.avatar
-      FROM friendships fs JOIN users u ON 
+        u.avatar,
+        m.text as lastMessage,
+        m.created_at as lastMessageTime
+      FROM friendships fs 
+      JOIN users u ON 
       (
         (fs.user_id_1 = ? AND fs.user_id_2 = u.id) OR
         (fs.user_id_2 = ? AND fs.user_id_1 = u.id)
       )
+      LEFT JOIN RankedMessages m ON rn = 1 
+      AND (
+        (m.sender = u.username) OR 
+        (m.receiver = u.username)
+      )
       WHERE fs.status = 'accepted' AND u.id != ?
+      ORDER BY COALESCE(m.created_at, '1970-01-01') DESC
       `,
-      [userId, userId, userId]
+      [userId, userId, userId, userId]
     );
 
     res.json({ friends });

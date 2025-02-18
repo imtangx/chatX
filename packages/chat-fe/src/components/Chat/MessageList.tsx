@@ -42,10 +42,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
 
     const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
-      if (
-        data.sender === activeDialog || 
-        (data.sender === sender_name && data.receiver === activeDialog)
-      ) {
+      if (data.sender === activeDialog || (data.sender === sender_name && data.receiver === activeDialog)) {
         setMessages(prev => [...prev, data]);
       }
     };
@@ -63,11 +60,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
       style={{ height: '100%', width: '100%', overflow: 'auto' }}
       dataSource={messages}
       renderItem={msg => (
-        <MessageItem 
-          message={msg.text} 
-          isSelf={msg.sender === sender_name}
-          timestamp={msg.timestamp}
-        />
+        <MessageItem message={msg.text} isSelf={msg.sender === sender_name} timestamp={msg.timestamp} />
       )}
     />
   );
