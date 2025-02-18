@@ -44,16 +44,18 @@ wss.on('connection', (ws, req) => {
         [text, sender, receiver]
       );
       
-      // 获取刚插入的消息ID
-      const messageId = result.insertId;
+      const [newMessage] = await pool.execute(
+        'SELECT id, text, sender, receiver, created_at FROM messages WHERE id = ?',
+        [result.insertId]
+      );
       
-      // 构造要发送的消息对象
+      // 
       const messageToSend = {
-        id: messageId,
+        id: result.insertId,
         text,
         sender,
         receiver,
-        timestamp: new Date().toISOString()
+        timestamp: newMessage[0].created_at
       };
 
       // 发送给接收者
@@ -62,7 +64,7 @@ wss.on('connection', (ws, req) => {
         receiverWs.send(JSON.stringify(messageToSend));
       }
 
-      // 发送给发送者（这是之前缺少的部分）
+      // 发送给发送者
       const senderWs = connections.get(sender);
       if (senderWs) {
         senderWs.send(JSON.stringify(messageToSend));
@@ -251,7 +253,7 @@ app.post('/friends/requests/:userId', async (req, res) => {
       message: '好友请求已发送',
       requestId: requestId,
       receiverUser: { id: receiverUserId, username: receiverUsername, avatar: receiverUser.avatar },
-    }); // 201 Created
+    }); 
   } catch (err) {
     console.error('发送好友请求出错:', err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: '服务器内部错误' });
@@ -312,7 +314,7 @@ app.get('/messages', async (req, res) => {
   try {
     const { sender_name, receiver_name } = req.query;
     const [messages] = await pool.execute(
-      'SELECT * FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)',
+      'SELECT id, text, sender, receiver, created_at as timestamp FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) ORDER BY created_at ASC',
       [sender_name, receiver_name, receiver_name, sender_name]
     );
     res.json({ messages });
