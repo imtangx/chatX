@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MessageItem from './MessageItem';
 import { List } from 'antd';
 import { Message } from '@chatx/types';
@@ -12,6 +12,17 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const sender_name = localStorage.getItem('username');
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -48,6 +59,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
 
   return (
     <List
+      ref={listRef}
       style={{ height: '100%', width: '100%', overflow: 'auto' }}
       dataSource={messages}
       renderItem={msg => (
