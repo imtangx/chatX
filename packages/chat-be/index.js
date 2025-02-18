@@ -12,8 +12,15 @@ const port = 3001;
 app.use(express.json());
 app.use(cors());
 
-const wss = new WebSocketServer({ noServer: true });
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  database: 'chat_app_db',
+});
 
+const secretKey = 'imtxcangetoffer';
+
+const wss = new WebSocketServer({ noServer: true });
 const connections = new Map();
 
 wss.on('connection', (ws, req) => {
@@ -23,32 +30,56 @@ wss.on('connection', (ws, req) => {
   if (username) {
     connections.set(username, ws);
     console.log(`用户${username}连接成功`);
-  } else {
-    console.error('无效用户连接');
   }
 
-  ws.on('message', message => {
-    console.log(`收到${username}发来的消息：`, JSON.parse(message));
-    /** 处理聊天信息 */
+  ws.on('message', async message => {
+    try {
+      const messageData = JSON.parse(message);
+      console.log(`收到${username}发来的消息：`, messageData);
+      
+      // 存储消息到数据库
+      const { text, sender, receiver } = messageData;
+      const [result] = await pool.execute(
+        'INSERT INTO messages (text, sender, receiver) VALUES (?, ?, ?)',
+        [text, sender, receiver]
+      );
+      
+      // 获取刚插入的消息ID
+      const messageId = result.insertId;
+      
+      // 构造要发送的消息对象
+      const messageToSend = {
+        id: messageId,
+        text,
+        sender,
+        receiver,
+        timestamp: new Date().toISOString()
+      };
+
+      // 发送给接收者
+      const receiverWs = connections.get(receiver);
+      if (receiverWs) {
+        receiverWs.send(JSON.stringify(messageToSend));
+      }
+
+      // 发送给发送者（这是之前缺少的部分）
+      const senderWs = connections.get(sender);
+      if (senderWs) {
+        senderWs.send(JSON.stringify(messageToSend));
+      }
+      
+    } catch (error) {
+      console.error('处理消息时出错:', error);
+    }
   });
 
   ws.on('close', () => {
     if (connections.has(username)) {
       connections.delete(username);
       console.log(`用户 ${username} 断开连接`);
-    } else {
-      console.error(`无效用户断开`);
     }
   });
 });
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  database: 'chat_app_db',
-});
-
-const secretKey = 'imtxcangetoffer';
 
 app.post('/auth/register', async (req, res) => {
   try {
@@ -274,6 +305,20 @@ app.patch('/friends/requests/:requestId', async (req, res) => {
   } catch (error) {
     console.error('更新好友请求状态出错:', error);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: '服务器内部错误' });
+  }
+});
+
+app.get('/messages', async (req, res) => {
+  try {
+    const { sender_name, receiver_name } = req.query;
+    const [messages] = await pool.execute(
+      'SELECT * FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)',
+      [sender_name, receiver_name, receiver_name, sender_name]
+    );
+    res.json({ messages });
+  } catch (err) {
+    console.error('数据库错误:', err);
+    res.status(500).json({ error: '查询失败' });
   }
 });
 

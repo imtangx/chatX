@@ -14,11 +14,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark, socket }) => {
   const { activeDialog } = useDialog();
 
   const handleSendMessage = (text: string) => {
-    if (socket.readyState === WebSocket.OPEN) {
+    if (socket.readyState === WebSocket.OPEN && activeDialog) {
       const message: Message = {
         text,
         sender: localStorage.getItem('username')!,
-        receiver: activeDialog!,
+        receiver: activeDialog,
+        timestamp: new Date().toISOString(),
       };
       socket.send(JSON.stringify(message));
     }
@@ -41,7 +42,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark, socket }) => {
           borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
-        <MessageList activeDialog={activeDialog!}></MessageList>
+        <MessageList 
+          activeDialog={activeDialog!} 
+          socket={socket}
+        />
       </Content>
       <Footer
         style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)', padding: '15px' }}
