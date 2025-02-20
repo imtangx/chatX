@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 export const getFriends = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.user.userId;
 
     /** 查询好友列表，并获取每个好友的最后一条消息 */
     const [friends] = await pool.query(
@@ -55,7 +55,7 @@ export const getFriends = async (req, res) => {
 
 export const getFriendRequests = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.user.userId;
 
     /**查询所有发给当前用户的好友请求 */
     const [AllFriendRequests] = await pool.query(
@@ -84,7 +84,7 @@ export const getFriendRequests = async (req, res) => {
 
 export const sendFriendRequests = async (req, res) => {
   try {
-    const senderUserId = req.params.userId;
+    const senderUserId = req.user.userId;
     const { receiverUsername } = req.body;
 
     /** 1. 查找接收者用户是否存在 */

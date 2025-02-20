@@ -22,7 +22,7 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
 
   useEffect(() => {
     const loadDialogs = async () => {
-      const res = await axios.get(`http://localhost:3001/friends/${localStorage.getItem('userId')}`);
+      const res = await axios.get(`http://localhost:3001/friends`);
       setDialogs(res.data.friends);
     };
     loadDialogs();

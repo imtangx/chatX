@@ -15,7 +15,7 @@ const FriendList = () => {
 
   useEffect(() => {
     const loadFriends = async () => {
-      const res = await axios.get(`http://localhost:3001/friends/${localStorage.getItem('userId')}`);
+      const res = await axios.get(`http://localhost:3001/friends`);
       setFriends(res.data.friends);
     };
     loadFriends();

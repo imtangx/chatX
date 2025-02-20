@@ -19,7 +19,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
   const [friendRequests, setFriendsRequests] = useState<FriendRequest[]>([]);
   const [usernameInput, setUsernameInput] = useState<string>('');
   const loadFriendsRequest = async () => {
-    const res = await axios.get(`http://localhost:3001/friends/requests/${localStorage.getItem('userId')}`);
+    const res = await axios.get(`http://localhost:3001/friends/requests`);
     setFriendsRequests(res.data.AllFriendRequests);
   };
 
@@ -30,7 +30,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
   const handleSendFriendRequest = async () => {
     const receiverUsername = usernameInput;
     try {
-      const res = await axios.post(`http://localhost:3001/friends/requests/${localStorage.getItem('userId')}`, {
+      const res = await axios.post(`http://localhost:3001/friends/requests`, {
         receiverUsername: receiverUsername,
       });
 
