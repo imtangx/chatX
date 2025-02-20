@@ -56,6 +56,7 @@ export const login = async (req, res) => {
     }
 
     const token = authUtils.genToken({ userId: user.id, username: user.username });
+    const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
 
     // 登录成功，返回用户信息和 JWT
     res.status(StatusCodes.OK).json({
@@ -66,9 +67,24 @@ export const login = async (req, res) => {
         avatar: user.avatar,
       },
       token,
+      refreshToken,
     });
   } catch (err) {
     console.error('登录验证出错：', err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: '服务器内部错误' });
+  }
+};
+
+export const refreshToken = async (req, res) => {
+  const refreshToken = req.body.refreshToken;
+
+  try {
+    const decoded = authUtils.verifyToken(refreshToken);
+
+    const newToken = authUtils.genToken({ userId: decoded.userId, username: decoded.username });
+
+    res.json({ token: newToken });
+  } catch (error) {
+    res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Refresh token 已失效，请重新登录' });
   }
 };

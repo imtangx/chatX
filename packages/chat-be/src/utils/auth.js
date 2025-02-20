@@ -13,7 +13,13 @@ export const comparePassword = async (password, hashedPassword) => {
 
 export const genToken = payload => {
   return jwt.sign(payload, secretKey, {
-    expiresIn: '1h',
+    expiresIn: '15m',
+  });
+};
+
+export const genRefreshToken = payload => {
+  return jwt.sign(payload, secretKey, {
+    expiresIn: '1d',
   });
 };
 

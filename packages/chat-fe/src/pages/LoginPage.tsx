@@ -58,8 +58,11 @@ export default () => {
       message.success('登录成功！');
 
       const token = response.data.token;
+      const refreshToken = response.data.refreshToken;
+      
       if (token) {
         localStorage.setItem('authToken', token);
+        localStorage.setItem('refreshToken', refreshToken);
         setTimeout(() => {
           navigate('/');
         }, 1000);

@@ -10,11 +10,12 @@ export const authMiddleware = (req, res, next) => {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: '未提供Token，拒绝访问' });
   }
 
-  try {
-    const decoded = authUtils.verifyToken(token);
-    req.user = decoded; // 将用户信息 (payload) 添加到 req.user
-    next(); // 请求传递到路由处理函数
-  } catch (err) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token无效或已过期' });
+  const decoded = authUtils.verifyToken(token);
+
+  if (!decoded) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token无效或已过期' }); // 401 - Token 无效或过期
   }
+
+  req.user = decoded;
+  next();
 };

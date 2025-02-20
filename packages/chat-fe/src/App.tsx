@@ -8,19 +8,10 @@ import { App as AntdApp, ConfigProvider, theme } from 'antd';
 import './App.css';
 import { DialogProvider } from './context/DialogContext';
 import axios from 'axios';
+import { setupAxiosInterceptors } from './utils/axiosInterceptor';
 
-axios.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`; //  为所有请求自动添加 Authorization 头
-    }
-    return config;
-  },
-  error => {
-    return Promise.reject(error);
-  }
-);
+// 初始化拦截器
+setupAxiosInterceptors();
 
 function App() {
   const getInitIsDark = () => {
