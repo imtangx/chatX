@@ -102,7 +102,10 @@ const setupResponseInterceptor = () => {
           // 获取refresh token
           const { refreshToken, setToken } = useUserStore.getState();
           if (!refreshToken) {
-            handleLogout();
+            // 代表首次登录失败 不需要重定向*
+            console.log('没有 refresh token');
+            processQueue(new Error('首次登录失败'), null);
+            isRefreshing = false;
             return Promise.reject(error);
           }
 
