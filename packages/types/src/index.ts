@@ -1,13 +1,5 @@
-export interface MenuItem {
-  id: string,
-  label: string,
-  icon: string,
-  iconSelected: string,
-}
-
-export interface Message {
-  text: string,
-  sender: string,
-  receiver: string,
-  timestamp: string,
-}
+export type { User, Tokens } from './user';
+export type { SiderItem } from './siderItem';
+export type { Message } from './message';
+export type { FriendRequest } from './friend';
+export type { Dialog } from './dialog';
