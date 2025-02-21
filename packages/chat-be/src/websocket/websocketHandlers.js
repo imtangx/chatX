@@ -14,11 +14,21 @@ export const handleWebSocketConnection = (ws, req) => {
 
   ws.on('message', async message => {
     try {
-      const messageData = JSON.parse(message.toString());
-      console.log(`收到${username}发来的消息：`, messageData);
+      console.log(`收到${username}发来的消息：`, JSON.parse(message));
+
+      const { type, text, sender, receiver } = JSON.parse(message);
+
+      /** 心跳检测 */
+      if (type === 'heartbeat') {
+        const senderWs = connections.get(username);
+        console.log('哈哈哈', username);
+        if (senderWs) {
+          senderWs.send(JSON.stringify({ type: 'heartbeat' }));
+        }
+        return;
+      }
 
       /** 存储消息到数据库 */
-      const { text, sender, receiver } = messageData;
       const [result] = await pool.execute('INSERT INTO messages (text, sender, receiver) VALUES (?, ?, ?)', [
         text,
         sender,
@@ -31,7 +41,7 @@ export const handleWebSocketConnection = (ws, req) => {
       );
 
       const messageToSend = {
-        id: result.insertId,
+        type: 'chat',
         text,
         sender,
         receiver,
