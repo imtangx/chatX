@@ -6,7 +6,7 @@ export const getFriends = async (req, res) => {
     const userId = req.user.userId;
 
     /** 查询好友列表，并获取每个好友的最后一条消息 */
-    const [friends] = await pool.query(
+    const [result] = await pool.query(
       `
       WITH RankedMessages AS (
         SELECT 
@@ -46,7 +46,72 @@ export const getFriends = async (req, res) => {
       [userId, userId, userId, userId]
     );
 
+    const friends = result.map(item => ({
+      userId: item.id,
+      username: item.username,
+      avatar: item.avatar,
+    }));
+    console.log(friends);
     res.json({ friends });
+  } catch (err) {
+    console.error('数据库查询出错:', err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: '服务器内部错误' });
+  }
+};
+
+export const getDialogs = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    /** 查询好友列表，并获取每个好友的最后一条消息 */
+    const [result] = await pool.query(
+      `
+      WITH RankedMessages AS (
+        SELECT 
+          m.*,
+          ROW_NUMBER() OVER (
+            PARTITION BY 
+              CASE 
+                WHEN m.sender = u.username THEN m.receiver 
+                ELSE m.sender 
+              END
+            ORDER BY m.created_at DESC
+          ) as rn
+        FROM users u
+        LEFT JOIN messages m ON (m.sender = u.username OR m.receiver = u.username)
+        WHERE u.id = ?
+      )
+      SELECT 
+        u.id,
+        u.username,
+        u.avatar,
+        m.text as lastMessage,
+        m.created_at as lastMessageTime
+      FROM friendships fs 
+      JOIN users u ON 
+      (
+        (fs.user_id_1 = ? AND fs.user_id_2 = u.id) OR
+        (fs.user_id_2 = ? AND fs.user_id_1 = u.id)
+      )
+      LEFT JOIN RankedMessages m ON rn = 1 
+      AND (
+        (m.sender = u.username) OR 
+        (m.receiver = u.username)
+      )
+      WHERE fs.status = 'accepted' AND u.id != ?
+      ORDER BY COALESCE(m.created_at, '1970-01-01') DESC
+      `,
+      [userId, userId, userId, userId]
+    );
+
+    const dialogs = result.map(item => ({
+      userId: item.id,
+      username: item.username,
+      avatar: item.avatar,
+      lastMessage: item.lastMessage,
+      lastMessageTime: item.lastMessageTime,
+    }));
+    res.json({ dialogs });
   } catch (err) {
     console.error('数据库查询出错:', err);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: '服务器内部错误' });
@@ -58,10 +123,11 @@ export const getFriendRequests = async (req, res) => {
     const userId = req.user.userId;
 
     /**查询所有发给当前用户的好友请求 */
-    const [AllFriendRequests] = await pool.query(
+    const [result] = await pool.query(
       `
       SELECT 
-        fs.id,
+        fs.id as requestId,
+        u.id as userId,
         u.username,
         u.avatar,
         fs.status
@@ -75,6 +141,15 @@ export const getFriendRequests = async (req, res) => {
       [userId, userId, userId]
     );
 
+    const AllFriendRequests = result.map(item => ({
+      requestId: item.requestId,
+      friend: {
+        userId: item.userId,
+        username: item.username,
+        avatar: item.avatar,
+      },
+      status: item.status,
+    }));
     res.json({ AllFriendRequests });
   } catch (err) {
     console.error('数据库查询出错:', err);
@@ -153,6 +228,8 @@ export const updateFriendRequestStatus = async (req, res) => {
   try {
     const requestId = req.params.requestId;
     const { newStatus } = req.body;
+
+    console.log(requestId, newStatus);
 
     /** 查询好友请求是否存在 */
     const [existingRequests] = await pool.execute('SELECT * FROM friendships WHERE id = ?', [requestId]);

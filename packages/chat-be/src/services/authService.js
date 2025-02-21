@@ -27,8 +27,8 @@ export const register = async (req, res) => {
     res.status(StatusCodes.CREATED).json({
       message: '注册成功',
       user: {
-        id: userId,
-        username: username,
+        userId, 
+        username,
         avatar: defaultAvatar,
       },
       token,
@@ -62,7 +62,7 @@ export const login = async (req, res) => {
     res.status(StatusCodes.OK).json({
       message: '登录成功',
       user: {
-        id: user.id,
+        userId: user.id,
         username: user.username,
         avatar: user.avatar,
       },
