@@ -7,10 +7,9 @@ import { useUserStore } from '../../store/userStore';
 
 interface MessageListProps {
   activeDialog: string;
-  socket: WebSocket;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
+const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const { username } = useUserStore();
   const listRef = useRef<HTMLDivElement>(null);
@@ -37,23 +36,6 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
     };
     loadMessages();
   }, [activeDialog]);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-      if (data.sender === activeDialog || (data.sender === username && data.receiver === activeDialog)) {
-        setMessages(prev => [...prev, data]);
-      }
-    };
-
-    socket.addEventListener('message', handleMessage);
-
-    return () => {
-      socket.removeEventListener('message', handleMessage);
-    };
-  }, [socket, activeDialog]);
 
   return (
     <List

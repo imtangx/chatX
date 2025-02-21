@@ -21,30 +21,6 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
   const { username, logout } = useUserStore();
-  const [socket, setSocket] = useState<WebSocket | null>(null);
-
-  useEffect(() => {
-    const socket = new WebSocket(`ws://localhost:3001?username=${encodeURIComponent(username!)}`);
-    setSocket(socket);
-
-    socket.onopen = () => {
-      console.log('Websocket连接成功');
-    };
-
-    socket.onmessage = event => {
-      console.log('收到消息：', event.data);
-    };
-
-    socket.onclose = () => {
-      console.log('Websocket连接关闭');
-    };
-
-    return () => {
-      if (socket?.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, [username]);
 
   const handleItemClick = (id: string) => {
     setActiveItem(prevActiveItem => {
@@ -112,7 +88,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
           </Content>
         </Layout>
       </Sider>
-      {activeItem === 'chat' && <ChatWindow isDark={isDark} socket={socket!}></ChatWindow>}
+      {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
       {activeItem === 'friends' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
     </Layout>
   );
