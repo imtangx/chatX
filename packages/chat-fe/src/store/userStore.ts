@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { User, Tokens } from '@chatx/types';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useWebSocketStore } from './wsStore';
 
 interface UserState {
   userId: number | null;
@@ -27,7 +28,10 @@ export const useUserStore = create<UserState>()(
       setUser: user => set({ ...user }),
       setToken: token => set({ token }),
       setTokens: tokens => set({ ...tokens }),
-      logout: () => set({ userId: null, username: null, avatar: null, token: null, refreshToken: null }),
+      logout: () => {
+        useWebSocketStore.getState().disconnect();
+        set({ userId: null, username: null, avatar: null, token: null, refreshToken: null })
+      },
     }),
     {
       name: 'user-storage', // 存储 key
@@ -36,4 +40,3 @@ export const useUserStore = create<UserState>()(
   )
 );
 
-0.01
