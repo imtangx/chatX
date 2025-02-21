@@ -3,16 +3,10 @@ import { Layout, List, Card, Avatar, Tag, Input, Button, Form } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, SendOutlined } from '@ant-design/icons';
 const { Header, Footer, Sider, Content } = Layout;
 import axios from 'axios';
+import { FriendRequest } from '@chatx/types';
 
 interface FriendRequestWindowProps {
   isDark: boolean;
-}
-
-interface FriendRequest {
-  id: number;
-  username: string;
-  avatar: string;
-  status: string;
 }
 
 const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => {
@@ -91,21 +85,21 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
           style={{ width: '100%', height: '100%', overflow: 'auto' }}
           dataSource={friendRequests}
           renderItem={req => (
-            <List.Item key={req.id} style={{ display: 'flex', height: '100px', margin: '12px' }}>
+            <List.Item key={req.requestId} style={{ display: 'flex', height: '100px', margin: '12px' }}>
               <Card style={{ height: '100%', width: '100%' }}>
                 <Card.Meta
                   style={{ display: 'flex', alignItems: 'center' }}
-                  avatar={<Avatar src={req.avatar}></Avatar>}
+                  avatar={<Avatar src={req.friend.avatar}></Avatar>}
                   title={
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                      {req.username}
+                      {req.friend.username}
                       <div style={{ flexGrow: 1 }}></div>
 
                       {req.status === 'pending' && (
                         <>
                           <Tag
                             style={{ cursor: 'pointer' }}
-                            onClick={() => handleAcceptRequest(req.id)}
+                            onClick={() => handleAcceptRequest(req.requestId)}
                             icon={<CheckCircleFilled></CheckCircleFilled>}
                             color='green'
                           >
@@ -113,7 +107,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
                           </Tag>
                           <Tag
                             style={{ cursor: 'pointer' }}
-                            onClick={() => handleRejectRequest(req.id)}
+                            onClick={() => handleRejectRequest(req.requestId)}
                             icon={<CloseCircleFilled></CloseCircleFilled>}
                             color='red'
                           >

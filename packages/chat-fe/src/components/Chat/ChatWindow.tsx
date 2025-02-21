@@ -4,6 +4,7 @@ import { useDialog } from '../../context/DialogContext';
 import { MessageInputBox, MessageList } from './';
 const { Header, Footer, Sider, Content } = Layout;
 import { Message } from '@chatx/types';
+import { useUserStore } from '../../store/userStore';
 
 interface ChatWindowProps {
   isDark: boolean;
@@ -12,12 +13,13 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ isDark, socket }) => {
   const { activeDialog } = useDialog();
+  const { username } = useUserStore();
 
   const handleSendMessage = (text: string) => {
     if (socket.readyState === WebSocket.OPEN && activeDialog) {
       const message: Message = {
         text,
-        sender: localStorage.getItem('username')!,
+        sender: username!,
         receiver: activeDialog,
         timestamp: new Date().toISOString(),
       };
@@ -42,10 +44,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark, socket }) => {
           borderBlockEnd: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
-        <MessageList 
-          activeDialog={activeDialog!} 
-          socket={socket}
-        />
+        <MessageList activeDialog={activeDialog!} socket={socket} />
       </Content>
       <Footer
         style={{ height: '200px', background: isDark ? 'rgb(17, 17, 17)' : 'rgb(243, 243, 243)', padding: '15px' }}

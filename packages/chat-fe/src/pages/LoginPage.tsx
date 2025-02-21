@@ -20,10 +20,12 @@ import React, { useState, useEffect } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { useUserStore } from '../store/userStore';
 
 type LoginType = 'email' | 'account';
 
 export default () => {
+  const { setUser, setTokens } = useUserStore();
   const { message } = App.useApp();
   const { token } = theme.useToken();
   const [loginType, setLoginType] = useState<LoginType>('account');
@@ -53,22 +55,13 @@ export default () => {
       const loginBackendUrl = 'http://localhost:3001/auth/login';
       const response = await axios.post(loginBackendUrl, apiPayload);
       console.log('登录成功，后端响应数据:', response.data);
-      localStorage.setItem('username', values.username);
-      localStorage.setItem('userId', response.data.user.id);
+      const { user, token, refreshToken } = response.data;
+      setUser(user);
+      setTokens({ token, refreshToken });
       message.success('登录成功！');
-
-      const token = response.data.token;
-      const refreshToken = response.data.refreshToken;
-      
-      if (token) {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('refreshToken', refreshToken);
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
-      } else {
-        message.error('登录失败，未收到Token！');
-      }
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     } catch (err) {
       console.error('登录失败，请求出错:', err);
       message.error('登录失败，请稍后重试！');
@@ -77,8 +70,8 @@ export default () => {
 
   // 如果存在token 跳转首页
   useEffect(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
+    const token = localStorage.getItem('token');
+    if (token) {
       navigate('/');
     }
   }, []);

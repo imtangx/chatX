@@ -5,6 +5,7 @@ import { DialogList, LeftSider, FriendList } from '../components/Sidebar';
 import { ChatWindow } from '../components/Chat';
 import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
+import { useUserStore } from '../store/userStore';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -19,7 +20,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   };
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
-  const username = localStorage.getItem('username');
+  const { username, logout } = useUserStore();
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
     socket.onclose = () => {
       console.log('Websocket连接关闭');
     };
-    
+
     return () => {
       if (socket?.readyState === WebSocket.OPEN) {
         socket.close();
@@ -53,10 +54,8 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('username');
-    localStorage.removeItem('userId');
+    logout();
+    localStorage.removeItem('user-storage');
     localStorage.removeItem('activeItem');
     localStorage.removeItem('activeDialog');
     navigate('/auth/login');

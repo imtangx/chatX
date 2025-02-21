@@ -3,6 +3,7 @@ import MessageItem from './MessageItem';
 import { List } from 'antd';
 import { Message } from '@chatx/types';
 import axios from 'axios';
+import { useUserStore } from '../../store/userStore';
 
 interface MessageListProps {
   activeDialog: string;
@@ -11,7 +12,7 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const sender_name = localStorage.getItem('username');
+  const { username } = useUserStore();
   const listRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -28,8 +29,8 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
     const loadMessages = async () => {
       const res = await axios.get(`http://localhost:3001/messages`, {
         params: {
-          sender_name: encodeURIComponent(sender_name!),
-          receiver_name: encodeURIComponent(activeDialog),
+          sender_name: username,
+          receiver_name: activeDialog,
         },
       });
       setMessages(res.data.messages);
@@ -42,7 +43,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
 
     const handleMessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
-      if (data.sender === activeDialog || (data.sender === sender_name && data.receiver === activeDialog)) {
+      if (data.sender === activeDialog || (data.sender === username && data.receiver === activeDialog)) {
         setMessages(prev => [...prev, data]);
       }
     };
@@ -59,9 +60,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog, socket }) => {
       ref={listRef}
       style={{ height: '100%', width: '100%', overflow: 'auto' }}
       dataSource={messages}
-      renderItem={msg => (
-        <MessageItem message={msg.text} isSelf={msg.sender === sender_name} timestamp={msg.timestamp} />
-      )}
+      renderItem={msg => <MessageItem message={msg.text} isSelf={msg.sender === username} timestamp={msg.timestamp} />}
     />
   );
 };

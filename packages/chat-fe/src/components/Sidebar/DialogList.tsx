@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Avatar, List, Card, Tag } from 'antd';
-import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { useDialog } from '../../context/DialogContext';
 import axios from 'axios';
-
-interface Dialog {
-  id: number;
-  username: string;
-  avatar: string;
-  lastMessage?: string;
-  lastMessageTime?: string;
-}
+import { Dialog } from '@chatx/types';
 
 interface DialogListProps {
   isDark: boolean;
@@ -22,8 +14,8 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
 
   useEffect(() => {
     const loadDialogs = async () => {
-      const res = await axios.get(`http://localhost:3001/friends`);
-      setDialogs(res.data.friends);
+      const res = await axios.get(`http://localhost:3001/friends/dialogs`);
+      setDialogs(res.data.dialogs);
     };
     loadDialogs();
   }, []);
@@ -54,7 +46,7 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
       dataSource={dialogs}
       renderItem={dialog => (
         <List.Item
-          key={dialog.id}
+          key={dialog.userId}
           style={{
             background:
               activeDialog === dialog.username ? (isDark ? 'rgb(81, 81, 81)' : 'rgb(224, 224, 224)') : 'inherit',

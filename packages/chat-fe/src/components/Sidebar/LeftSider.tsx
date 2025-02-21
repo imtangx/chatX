@@ -1,7 +1,8 @@
 import React from 'react';
 import { BubbleGrey, BubbleBlue, FriendsGrey, FriendsBlue, LogoutGrey } from '../../assets';
 import { Avatar } from 'antd';
-import { MenuItem } from '@chatx/types';
+import { SiderItem } from '@chatx/types';
+import { useUserStore } from '../../store/userStore';
 
 interface LeftSiderProps {
   activeItem: string;
@@ -10,13 +11,14 @@ interface LeftSiderProps {
   handleLogout: () => void;
 }
 
-const MenuItems: MenuItem[] = [
+const MenuItems: SiderItem[] = [
   { id: 'chat', label: '聊天', icon: BubbleGrey, iconSelected: BubbleBlue },
   { id: 'friends', label: '朋友', icon: FriendsGrey, iconSelected: FriendsBlue },
 ];
 
 const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {
-  const avatarUrl = `https://api.dicebear.com/7.x/miniavs/svg?seed=${localStorage.getItem('username')}`;
+  const { username } = useUserStore();
+  const avatarUrl = `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`;
   return (
     <div
       style={{

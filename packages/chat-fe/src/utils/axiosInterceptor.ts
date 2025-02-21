@@ -1,4 +1,5 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+import { useUserStore } from '../store/userStore';
 
 // 定义等待队列中Promise的类型
 interface QueueItem {
@@ -34,10 +35,11 @@ const processQueue = (error: any, token: string | null = null) => {
  * 登出处理函数
  */
 const handleLogout = () => {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('username');
-  localStorage.removeItem('userId');
+  const { logout } = useUserStore.getState();
+  logout();
+  localStorage.removeItem('user-storage');
+  localStorage.removeItem('activeItem');
+  localStorage.removeItem('activeDialog');
   window.location.href = '/auth/login';
 };
 
@@ -47,7 +49,7 @@ const handleLogout = () => {
 const setupRequestInterceptor = () => {
   axios.interceptors.request.use(
     config => {
-      const token = localStorage.getItem('authToken');
+      const { token } = useUserStore.getState();
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
@@ -98,9 +100,8 @@ const setupResponseInterceptor = () => {
           isRefreshing = true;
 
           // 获取refresh token
-          const refreshToken = localStorage.getItem('refreshToken');
+          const { refreshToken, setToken } = useUserStore.getState();
           if (!refreshToken) {
-            console.log('没有 refresh token');
             handleLogout();
             return Promise.reject(error);
           }
@@ -113,7 +114,7 @@ const setupResponseInterceptor = () => {
 
             // 保存新的access token
             const newToken = response.data.token;
-            localStorage.setItem('authToken', newToken);
+            setToken(newToken);
 
             // 更新当前请求的token
             originalRequest.headers!['Authorization'] = `Bearer ${newToken}`;
