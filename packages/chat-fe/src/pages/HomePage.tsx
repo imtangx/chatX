@@ -6,6 +6,8 @@ import { ChatWindow } from '../components/Chat';
 import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
+import { useWebSocketStore } from '../store/wsStore';
+import { App } from 'antd';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -18,9 +20,30 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
     const storedActiveItem = localStorage.getItem('activeItem');
     return storedActiveItem ? JSON.parse(storedActiveItem) : 'chat';
   };
+  const { message } = App.useApp();
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
   const { username, logout } = useUserStore();
+  const { connect, disconnect, isReconnecting } = useWebSocketStore();
+  useEffect(() => {
+    connect(`ws://localhost:3001?username=${encodeURIComponent(username!)}`);
+    return () => {
+      disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let loadingMessage: ReturnType<typeof message.loading> | null = null;
+    if (isReconnecting) {
+      loadingMessage = message.loading('正在重新连接服务器...', 0);
+    }
+    return () => {
+      if (loadingMessage) {
+        // 销毁消息
+        loadingMessage();
+      }
+    };
+  }, [isReconnecting]);
 
   const handleItemClick = (id: string) => {
     setActiveItem(prevActiveItem => {
