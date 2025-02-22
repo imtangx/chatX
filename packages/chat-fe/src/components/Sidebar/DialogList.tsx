@@ -3,6 +3,8 @@ import { Avatar, List, Card, Tag } from 'antd';
 import { useDialog } from '../../context/DialogContext';
 import axios from 'axios';
 import { Dialog } from '@chatx/types';
+import { useWebSocketStore } from '../../store/wsStore';
+import { useUserStore } from '../../store/userStore';
 
 interface DialogListProps {
   isDark: boolean;
@@ -11,14 +13,27 @@ interface DialogListProps {
 const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
   const [dialogs, setDialogs] = useState<Dialog[]>([]);
   const { activeDialog, setActiveDialog } = useDialog();
+  const { username } = useUserStore();
+  const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
+
+  const loadDialogs = async () => {
+    const res = await axios.get(`http://localhost:3001/friends/dialogs`);
+    setDialogs(res.data.dialogs);
+  };
 
   useEffect(() => {
-    const loadDialogs = async () => {
-      const res = await axios.get(`http://localhost:3001/friends/dialogs`);
-      setDialogs(res.data.dialogs);
-    };
     loadDialogs();
   }, []);
+
+  useEffect(() => {
+    if (!lastChatMessage) return;
+    const isCurrentDialog = lastChatMessage.sender === username || lastChatMessage.receiver === username;
+    if (!isCurrentDialog) {
+      return;
+    }
+
+    loadDialogs();
+  }, [lastChatMessage]);
 
   const handleDialogClick = (username: string) => {
     setActiveDialog(username);

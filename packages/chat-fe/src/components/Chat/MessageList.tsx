@@ -21,7 +21,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
       setTimeout(() => {
         listRef.current?.scrollTo({
           top: listRef.current.scrollHeight,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
       }, 100);
     }
@@ -34,10 +34,12 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
       (lastChatMessage.sender === activeDialog && lastChatMessage.receiver === username) ||
       (lastChatMessage.sender === username && lastChatMessage.receiver === activeDialog);
 
-    if (isCurrentDialog) {
-      setMessages(prevMessages => [...prevMessages, lastChatMessage]);
-      scrollToBottom();
+    if (!isCurrentDialog) {
+      return;
     }
+    
+    setMessages(prevMessages => [...prevMessages, lastChatMessage]);
+    scrollToBottom();
   }, [lastChatMessage, activeDialog, username]);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
         console.error('加载消息失败:', error);
       }
     };
-    
+
     if (activeDialog) {
       loadMessages();
     }
