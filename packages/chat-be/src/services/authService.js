@@ -7,7 +7,7 @@ export const register = async (req, res) => {
     const { username, password } = req.body;
     const [existingUsers] = await pool.execute('SELECT * FROM users WHERE username = ?', [username]);
     if (existingUsers.length > 0) {
-      res.status(StatusCodes.CONFLICT).json({ message: '用户名已被占用' });
+      return res.status(StatusCodes.CONFLICT).json({ message: '用户名已被占用' });
     }
 
     const hashedPassword = await authUtils.hashPassword(password);
