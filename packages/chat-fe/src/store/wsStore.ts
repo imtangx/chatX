@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { WebSocketMessage } from '@chatx/types';
 
+
 interface WebSocketState {
   socket: WebSocket | null;
   socketUrl: string;
@@ -11,6 +12,7 @@ interface WebSocketState {
   isManualDisconnect: boolean;
   isReconnectFailed: boolean;
   isReconnecting: boolean;
+  lastChatMessage: WebSocketMessage | null;
   setSocket: (socket: WebSocket) => void;
   setHeartbeatStatus: (heartbeatStatus: 'waiting' | 'received') => void;
   sendMessage: (message: WebSocketMessage) => void;
@@ -32,6 +34,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   isManualDisconnect: false,
   isReconnectFailed: false,
   isReconnecting: false,
+  lastChatMessage: null,
   setSocket: socket => set({ socket }),
   setHeartbeatStatus: heartbeatStatus => set({ heartbeatStatus }),
   sendMessage: message => {
@@ -53,9 +56,12 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     console.log('接收到消息：', message);
     const { type, text, sender, receiver } = message;
     if (type === 'heartbeat') {
-      console.log('心跳应答了');
+      // console.log('心跳应答了');
       get().setHeartbeatStatus('received');
       set({ reHeartbeatCnt: 0 });
+    } else {
+      console.log('接收到聊天消息：', message);
+      set({ lastChatMessage: message });
     }
   },
 
