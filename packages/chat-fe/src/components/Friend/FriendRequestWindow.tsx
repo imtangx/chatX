@@ -4,6 +4,7 @@ import { CheckCircleFilled, CloseCircleFilled, SendOutlined } from '@ant-design/
 const { Header, Footer, Sider, Content } = Layout;
 import axios from 'axios';
 import { FriendRequest } from '@chatx/types';
+import { App } from 'antd';
 
 interface FriendRequestWindowProps {
   isDark: boolean;
@@ -12,6 +13,7 @@ interface FriendRequestWindowProps {
 const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => {
   const [friendRequests, setFriendsRequests] = useState<FriendRequest[]>([]);
   const [usernameInput, setUsernameInput] = useState<string>('');
+  const { message } = App.useApp();
   const loadFriendsRequest = async () => {
     const res = await axios.get(`http://localhost:3001/friends/requests`);
     setFriendsRequests(res.data.AllFriendRequests);
@@ -29,8 +31,10 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
       });
 
       console.log('好友请求发送成功', res.data);
+      message.success('好友请求发送成功');
       setUsernameInput('');
-    } catch (err) {
+    } catch (err: any) {
+      message.error(err.response.data.message);
       console.error('发送好友请求失败', err);
     }
   };
