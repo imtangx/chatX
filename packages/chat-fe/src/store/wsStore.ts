@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { WebSocketMessage } from '@chatx/types';
-
+import { compressMessage, decompressMessage } from '../utils/compression';
 
 interface WebSocketState {
   socket: WebSocket | null;
@@ -17,7 +17,7 @@ interface WebSocketState {
   setHeartbeatStatus: (heartbeatStatus: 'waiting' | 'received') => void;
   sendMessage: (message: WebSocketMessage) => void;
   sendHeartbeat: () => void;
-  receiverMessage: (message: WebSocketMessage) => void;
+  receiverMessage: (message: Uint8Array) => void;
   connect: (url: string) => void;
   disconnect: () => void;
   startHeartbeat: () => void;
@@ -41,7 +41,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     const { socket, heartbeatStatus } = get();
     console.log('^^', socket, heartbeatStatus);
     if (socket && socket.readyState === WebSocket.OPEN && heartbeatStatus === 'received') {
-      socket.send(JSON.stringify(message));
+      socket.send(compressMessage(message));
     } else {
       throw new Error('您与服务器失去连接，发送消息失败！');
     }
@@ -49,10 +49,11 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   sendHeartbeat: () => {
     const { socket } = get();
     if (socket) {
-      socket.send(JSON.stringify({ type: 'heartbeat' }));
+      socket.send(compressMessage({ type: 'heartbeat' }));
     }
   },
-  receiverMessage: message => {
+  receiverMessage: data => {
+    const message: WebSocketMessage = decompressMessage(data);
     console.log('接收到消息：', message);
     const { type, text, sender, receiver } = message;
     if (type === 'heartbeat') {
@@ -69,15 +70,25 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     const socket = new WebSocket(url);
     set({ socketUrl: url });
     socket.onopen = event => {
-      set({ socket, reConnectCnt: 0, reHeartbeatCnt: 0, isManualDisconnect: false, isReconnectFailed: false, isReconnecting: false });
+      set({
+        socket,
+        reConnectCnt: 0,
+        reHeartbeatCnt: 0,
+        isManualDisconnect: false,
+        isReconnectFailed: false,
+        isReconnecting: false,
+      });
       get().startHeartbeat();
       console.log('WebSocket 连接已打开');
     };
 
-    socket.onmessage = event => {
+    socket.onmessage = async event => {
       try {
-        const message = JSON.parse(event.data);
-        get().receiverMessage(message);
+        // 将接收到的数据转换为 ArrayBuffer
+        const buffer = await event.data.arrayBuffer();
+        // 转换为 Uint8Array 并传递给 receiverMessage
+        const uint8Array = new Uint8Array(buffer);
+        get().receiverMessage(uint8Array);
       } catch (err: any) {
         console.error('解析 WebSocket 消息出错', err);
       }
