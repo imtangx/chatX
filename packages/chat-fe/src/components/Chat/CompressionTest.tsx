@@ -28,7 +28,7 @@ const CompressionTest: React.FC = () => {
 
     // 压缩数据
     const compressed = compressMessage(testMessage);
-    const compressedSize = compressed?.length || 0;
+    const compressedSize = compressed?.data.length || 0;
 
     // 计算压缩比
     const compressionRatio = ((originalSize - compressedSize) / originalSize) * 100;

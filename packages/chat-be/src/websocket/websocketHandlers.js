@@ -15,7 +15,11 @@ export const handleWebSocketConnection = (ws, req) => {
 
   ws.on('message', async data => {
     try {
-      const message = decompressMessage(data);
+      // 获取压缩标志和消息数据
+      const isCompressed = data[0] === 1;
+      const messageData = data.slice(1);
+      
+      const message = decompressMessage(messageData, isCompressed);
       console.log(`收到${username}发来的消息：`, message);
 
       const { type, text, sender, receiver } = message;
@@ -26,7 +30,10 @@ export const handleWebSocketConnection = (ws, req) => {
         console.log('哈哈哈', username);
         if (senderWs) {
           const response = compressMessage({ type: 'heartbeat' });
-          senderWs.send(response);
+          const finalData = new Uint8Array(response.data.length + 1);
+          finalData[0] = response.compressed ? 1 : 0;
+          finalData.set(response.data, 1);
+          senderWs.send(finalData);
         }
         return;
       }
@@ -51,16 +58,21 @@ export const handleWebSocketConnection = (ws, req) => {
         timestamp: newMessage[0].created_at,
       });
 
+      /** 准备发送的数据 */
+      const finalData = new Uint8Array(messageToSend.data.length + 1);
+      finalData[0] = messageToSend.compressed ? 1 : 0;
+      finalData.set(messageToSend.data, 1);
+
       /** 发送给接收者 */
       const receiverWs = connections.get(receiver);
       if (receiverWs) {
-        receiverWs.send(messageToSend);
+        receiverWs.send(finalData);
       }
 
       /** 发送给发送者 */
       const senderWs = connections.get(sender);
       if (senderWs) {
-        senderWs.send(messageToSend);
+        senderWs.send(finalData);
       }
     } catch (error) {
       console.error('处理消息时出错:', error);

@@ -41,7 +41,17 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     const { socket, heartbeatStatus } = get();
     console.log('^^', socket, heartbeatStatus);
     if (socket && socket.readyState === WebSocket.OPEN && heartbeatStatus === 'received') {
-      socket.send(compressMessage(message));
+      const compressedResult = compressMessage(message);
+      if (!compressedResult) return;
+
+      const { data, compressed } = compressedResult;
+      
+      // 创建一个新的数组，第一个字节表示是否压缩
+      const finalData = new Uint8Array(data.length + 1);
+      finalData[0] = compressed ? 1 : 0;
+      finalData.set(data, 1);
+      
+      socket.send(finalData);
     } else {
       throw new Error('您与服务器失去连接，发送消息失败！');
     }
@@ -49,15 +59,28 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   sendHeartbeat: () => {
     const { socket } = get();
     if (socket) {
-      socket.send(compressMessage({ type: 'heartbeat' }));
+      const compressedResult = compressMessage({ type: 'heartbeat' });
+      if (!compressedResult) return;
+
+      const { data, compressed } = compressedResult;
+      const finalData = new Uint8Array(data.length + 1);
+      finalData[0] = compressed ? 1 : 0;
+      finalData.set(data, 1);
+      
+      socket.send(finalData);
     }
   },
   receiverMessage: data => {
-    const message: WebSocketMessage = decompressMessage(data);
+    // 获取压缩标志和消息数据
+    const isCompressed = data[0] === 1;
+    const messageData = data.slice(1);
+    
+    const message = decompressMessage(messageData, isCompressed);
+    if (!message) return;
+
     console.log('接收到消息：', message);
     const { type, text, sender, receiver } = message;
     if (type === 'heartbeat') {
-      // console.log('心跳应答了');
       get().setHeartbeatStatus('received');
       set({ reHeartbeatCnt: 0 });
     } else {
