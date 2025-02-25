@@ -7,6 +7,7 @@ import { useUserStore } from '../../store/userStore';
 import { useWebSocketStore } from '../../store/wsStore';
 import { WebSocketMessage } from '@chatx/types';
 import { App } from 'antd';
+import CompressionTest from './CompressionTest';
 
 interface ChatWindowProps {
   isDark: boolean;
@@ -60,6 +61,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
       >
         <MessageInputBox handleSendMessage={handleSendMessage}></MessageInputBox>
       </Footer>
+      <CompressionTest />
     </Layout>
   );
 };
