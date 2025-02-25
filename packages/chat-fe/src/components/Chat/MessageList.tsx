@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ReactNode, SyntheticEvent } from 'react';
 import MessageItem from './MessageItem';
-import { List } from 'antd';
 import { WebSocketMessage } from '@chatx/types';
 import axios from 'axios';
 import { useUserStore } from '../../store/userStore';
@@ -15,6 +14,8 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
   const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
   const { username } = useUserStore();
   const listRef = useRef<HTMLDivElement>(null);
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+  const [listHeight, setListHeight] = useState<number>(0);
 
   const scrollToBottom = () => {
     if (listRef.current) {
@@ -27,7 +28,17 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
     }
   };
 
+  const handleScroll = (e: SyntheticEvent<EventTarget>) => { // 类型标注 e 为 UIEvent<HTMLDivElement>
+    const target = e.target as HTMLDivElement;
+    const scrollTop = target.scrollTop;
+    setScrollOffset(scrollTop);
+  };
+
   useEffect(() => {
+    if (listRef.current) {
+      const height = listRef.current.getBoundingClientRect().height;
+      setListHeight(height);
+    }
     if (!lastChatMessage) return;
 
     const isCurrentDialog =
@@ -37,7 +48,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
     if (!isCurrentDialog) {
       return;
     }
-    
+
     setMessages(prevMessages => [...prevMessages, lastChatMessage]);
     scrollToBottom();
   }, [lastChatMessage, activeDialog, username]);
@@ -63,13 +74,40 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
     }
   }, [activeDialog]);
 
+  const getCurrentDialog = () => {
+    const items: ReactNode[] = [];
+    const startIndex = Math.max(0, Math.floor(scrollOffset / 70) - 2);
+    const nums = Math.ceil(listHeight / 70);
+    const endIndex = Math.min(startIndex + nums + 2, messages.length - 1);
+
+    for (let i = startIndex; i <= endIndex; i++) {
+      const itemStyle: React.CSSProperties = {
+        position: 'absolute',
+        top: 70 * i,
+        width: '100%',
+      };
+      items.push(
+        <MessageItem
+          style={itemStyle}
+          key={i}
+          message={messages[i].text!}
+          isSelf={messages[i].sender === username}
+          timestamp={messages[i].timestamp}
+        />
+      );
+    }
+
+    return items;
+  };
+
   return (
-    <List
+    <div
       ref={listRef}
-      style={{ height: '100%', width: '100%', overflow: 'auto' }}
-      dataSource={messages}
-      renderItem={msg => <MessageItem message={msg.text!} isSelf={msg.sender === username} timestamp={msg.timestamp} />}
-    />
+      onScroll={handleScroll}
+      style={{ position: 'relative', height: '100%', width: '100%', overflow: 'auto' }}
+    >
+      <div style={{ height: messages.length * 70 }}>{getCurrentDialog()}</div>
+    </div>
   );
 };
 

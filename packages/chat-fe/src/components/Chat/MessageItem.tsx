@@ -2,12 +2,13 @@ import React from 'react';
 import { List, Avatar } from 'antd';
 
 interface MessageItemProps {
+  style?: React.CSSProperties;
   message: string;
   isSelf: boolean;
   timestamp?: string;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, isSelf, timestamp }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ style, message, isSelf, timestamp }) => {
   const formatTime = (timestamp?: string) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -20,6 +21,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isSelf, timestamp })
   return (
     <div
       style={{
+        ...style,
         display: 'flex',
         flexDirection: isSelf ? 'row-reverse' : 'row',
         justifyContent: 'flex-start',
