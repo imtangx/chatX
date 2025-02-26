@@ -1,4 +1,4 @@
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined, MailOutlined } from '@ant-design/icons';
 import {
   LoginForm,
   ProConfigProvider,
@@ -18,6 +18,7 @@ export default () => {
   const { message } = App.useApp();
   const { token } = theme.useToken();
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
@@ -29,11 +30,31 @@ export default () => {
 
   const handleFormFinish = async (values: any) => {
     console.log('表单提交的数据：', values);
+
+    try {
+      const response = await axios.post(`http://localhost:3001/auth/email/verify`, {
+        email: values.email,
+        code: values.captcha,
+      });
+      const { success } = response.data.response;
+      if (success === true) {
+        console.log('验证验证码成功');
+      } else {
+        console.log('验证验证码失败');
+        message.error('验证验证码失败，请稍后重试');
+        return;
+      }
+    } catch (err) {
+      console.error('验证验证码失败，请求出错:', err);
+      message.error('验证验证码失败，请稍后重试');
+      return;
+    }
+
     let apiPayload = {
       username: values.username,
       password: values.password,
+      email: values.email,
     };
-
     try {
       const registerBackendUrl = 'http://localhost:3001/auth/register';
       const response = await axios.post(registerBackendUrl, apiPayload);
@@ -43,9 +64,21 @@ export default () => {
       setTimeout(() => {
         navigate('/auth/login');
       }, 1000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('注册失败，请求出错:', err);
-      message.error('注册失败，请稍后重试！');
+      message.error(err.response.data.message);
+    }
+  };
+
+  const handleGetCaptcha = async () => {
+    try {
+      const response = await axios.post(`http://localhost:3001/auth/email/code`, {
+        email: form.getFieldValue('email'),
+      });
+      console.log('获取验证码成功，后端响应数据:', response.data);
+      message.success('验证码已发送，请查收！');
+    } catch (err) {
+      console.error('获取验证码失败，请求出错:', err);
     }
   };
 
@@ -62,6 +95,7 @@ export default () => {
           title='chatX'
           subTitle='轻量级的聊天应用'
           onFinish={handleFormFinish}
+          form={form}
           submitter={{
             searchConfig: {
               submitText: '注册',
@@ -97,6 +131,50 @@ export default () => {
                         },
                       ]}
                     />
+                    <>
+                      <ProFormText
+                        fieldProps={{
+                          size: 'large',
+                          prefix: <MailOutlined className={'prefixIcon'} />,
+                        }}
+                        name='email'
+                        placeholder={'邮箱账号'}
+                        rules={[
+                          {
+                            required: true,
+                            message: '请输入邮箱账号！',
+                          },
+                          {
+                            pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                            message: '邮箱格式错误！',
+                          },
+                        ]}
+                      />
+                      <ProFormCaptcha
+                        fieldProps={{
+                          size: 'large',
+                          prefix: <LockOutlined className={'prefixIcon'} />,
+                        }}
+                        captchaProps={{
+                          size: 'large',
+                        }}
+                        placeholder={'请输入验证码'}
+                        captchaTextRender={(timing, count) => {
+                          if (timing) {
+                            return `${count} ${'获取验证码'}`;
+                          }
+                          return '获取验证码';
+                        }}
+                        name='captcha'
+                        rules={[
+                          {
+                            required: true,
+                            message: '请输入验证码！',
+                          },
+                        ]}
+                        onGetCaptcha={handleGetCaptcha}
+                      />
+                    </>
                     <ProFormText.Password
                       name='password'
                       validateTrigger='onBlur'

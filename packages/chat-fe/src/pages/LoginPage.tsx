@@ -116,7 +116,7 @@ export default () => {
                         size: 'large',
                         prefix: <UserOutlined className={'prefixIcon'} />,
                       }}
-                      placeholder={'用户名'}
+                      placeholder={'用户名 / 邮箱账号'}
                       rules={[
                         {
                           required: true,
@@ -146,58 +146,6 @@ export default () => {
                           message: '密码长度至少为 6 位！',
                         },
                       ]}
-                    />
-                  </>
-                ),
-              },
-              {
-                key: 'email',
-                label: '邮箱登录',
-                children: loginType === 'email' && ( // children 属性用于放置 Tab 页的内容
-                  <>
-                    <ProFormText
-                      fieldProps={{
-                        size: 'large',
-                        prefix: <MailOutlined className={'prefixIcon'} />,
-                      }}
-                      name='email'
-                      placeholder={'邮箱账号'}
-                      rules={[
-                        {
-                          required: true,
-                          message: '请输入邮箱账号！',
-                        },
-                        {
-                          pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                          message: '邮箱格式错误！',
-                        },
-                      ]}
-                    />
-                    <ProFormCaptcha
-                      fieldProps={{
-                        size: 'large',
-                        prefix: <LockOutlined className={'prefixIcon'} />,
-                      }}
-                      captchaProps={{
-                        size: 'large',
-                      }}
-                      placeholder={'请输入验证码'}
-                      captchaTextRender={(timing, count) => {
-                        if (timing) {
-                          return `${count} ${'获取验证码'}`;
-                        }
-                        return '获取验证码';
-                      }}
-                      name='captcha'
-                      rules={[
-                        {
-                          required: true,
-                          message: '请输入验证码！',
-                        },
-                      ]}
-                      onGetCaptcha={async () => {
-                        message.success('获取验证码成功！验证码为：1234');
-                      }}
                     />
                   </>
                 ),
