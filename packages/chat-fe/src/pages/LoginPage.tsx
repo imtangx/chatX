@@ -68,6 +68,10 @@ export default () => {
     }
   };
 
+  const handleGithubLogin = () => {
+    window.location.href = 'http://localhost:3001/auth/github';
+  };
+
   // 如果存在token 跳转首页
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -91,7 +95,7 @@ export default () => {
           actions={
             <Space>
               <a style={{ color: 'rgb(204, 204, 204)' }}>其他登录方式</a>
-              <GithubOutlined style={iconStyles} />
+              <GithubOutlined style={iconStyles} onClick={handleGithubLogin} />
               <GoogleOutlined style={iconStyles} />
               <WeiboCircleOutlined style={iconStyles} />
             </Space>

@@ -9,6 +9,7 @@ import './App.css';
 import { DialogProvider } from './context/DialogContext';
 import axios from 'axios';
 import { setupAxiosInterceptors } from './utils/axiosInterceptor';
+import AuthCallback from './pages/AuthCallback';
 
 // 初始化拦截器
 setupAxiosInterceptors();
@@ -46,6 +47,7 @@ function App() {
               {isDark ? '🌒' : '🌖'}
             </button>
             <Routes>
+              <Route path='/auth/callback' element={<AuthCallback />} />
               <Route path='/auth/login' element={<LoginPage />} />
               <Route path='/auth/register' element={<RegisterPage />} />
               <Route
