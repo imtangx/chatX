@@ -24,3 +24,9 @@ export const emailConfig = {
   authCode: process.env.EMAIL_AUTH_CODE,
   from: process.env.EMAIL_FROM,
 };
+
+export const githubConfig = {
+  clientId: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackUrl: process.env.GITHUB_CALLBACK_URL,
+};
