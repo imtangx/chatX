@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { secretKey } from '../config/configuration.js';
+import { pool } from '../database/databaseServer.js';
 
 export const hashPassword = async password => {
   const saltRounds = 10;
@@ -29,5 +30,23 @@ export const verifyToken = token => {
     return decoded;
   } catch (error) {
     return null;
+  }
+};
+
+export const genUniqueName = async username => {
+  let suffix = 0;
+  let resultName = username;
+
+  while (true) {
+    const [existingUsers] = await pool.execute('SELECT * FROM users WHERE username = ? OR email = ?', [
+      resultName,
+      resultName,
+    ]);
+    if (existingUsers.length === 0) {
+      return resultName;
+    }
+
+    suffix++;
+    resultName = username + '_' + suffix.toString();
   }
 };
