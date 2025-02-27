@@ -5,6 +5,7 @@ const { Header, Footer, Sider, Content } = Layout;
 import axios from 'axios';
 import { FriendRequest } from '@chatx/types';
 import { App } from 'antd';
+import { config } from '../../config';
 
 interface FriendRequestWindowProps {
   isDark: boolean;
@@ -15,7 +16,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
   const [usernameInput, setUsernameInput] = useState<string>('');
   const { message } = App.useApp();
   const loadFriendsRequest = async () => {
-    const res = await axios.get(`http://localhost:3001/friends/requests`);
+    const res = await axios.get(`${config.API_URL}/friends/requests`);
     setFriendsRequests(res.data.AllFriendRequests);
   };
 
@@ -26,7 +27,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
   const handleSendFriendRequest = async () => {
     const receiverUsername = usernameInput;
     try {
-      const res = await axios.post(`http://localhost:3001/friends/requests`, {
+      const res = await axios.post(`${config.API_URL}/friends/requests`, {
         receiverUsername: receiverUsername,
       });
 
@@ -42,7 +43,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
   const handleAcceptRequest = async (reqId: number) => {
     console.log(reqId);
     try {
-      const res = await axios.patch(`http://localhost:3001/friends/requests/${reqId}`, {
+      const res = await axios.patch(`${config.API_URL}/friends/requests/${reqId}`, {
         newStatus: 'accepted',
       });
       loadFriendsRequest();
@@ -54,7 +55,7 @@ const FriendRequestWindow: React.FC<FriendRequestWindowProps> = ({ isDark }) => 
 
   const handleRejectRequest = async (reqId: number) => {
     try {
-      const res = await axios.patch(`http://localhost:3001/friends/requests/${reqId}`, {
+      const res = await axios.patch(`${config.API_URL}/friends/requests/${reqId}`, {
         newStatus: 'rejected',
       });
       loadFriendsRequest();

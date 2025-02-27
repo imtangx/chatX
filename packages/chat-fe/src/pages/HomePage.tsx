@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
 import { useWebSocketStore } from '../store/wsStore';
 import { App } from 'antd';
+import {config} from '../config'
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -26,7 +27,7 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   const { username, logout } = useUserStore();
   const { connect, disconnect, isReconnecting } = useWebSocketStore();
   useEffect(() => {
-    connect(`ws://localhost:3001?username=${encodeURIComponent(username!)}`);
+    connect(`${config.WS_URL}?username=${encodeURIComponent(username!)}`);
     return () => {
       disconnect();
     };

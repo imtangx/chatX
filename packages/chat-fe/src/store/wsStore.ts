@@ -6,7 +6,7 @@ interface WebSocketState {
   socket: WebSocket | null;
   socketUrl: string;
   heartbeatStatus: 'waiting' | 'received';
-  waitHeartbeatTimer: number | undefined;
+  waitHeartbeatTimer: any;
   reHeartbeatCnt: number;
   reConnectCnt: number;
   isManualDisconnect: boolean;
@@ -78,7 +78,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     const message = decompressMessage(messageData, isCompressed);
     if (!message) return;
 
-    console.log('接收到消息：', message);
+    // console.log('接收到消息：', message);
     const { type, text, sender, receiver } = message;
     if (type === 'heartbeat') {
       get().setHeartbeatStatus('received');
@@ -149,7 +149,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
     if (get().isManualDisconnect) {
       return;
     }
-    console.log('心跳重试次数：', get().reHeartbeatCnt);
+    // console.log('心跳重试次数：', get().reHeartbeatCnt);
     const timerId = setTimeout(() => {
       if (get().heartbeatStatus === 'received') {
         /** 下一轮心跳检测 */

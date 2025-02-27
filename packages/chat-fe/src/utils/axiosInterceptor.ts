@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useUserStore } from '../store/userStore';
+import {config} from '../config'
 
 // 定义等待队列中Promise的类型
 interface QueueItem {
@@ -73,7 +74,7 @@ const setupResponseInterceptor = () => {
       // 处理401错误（未授权）
       if (error.response?.status === 401) {
         // 如果是刷新token的请求返回401，说明refresh token已过期 否则是token过期
-        if (originalRequest.url === 'http://localhost:3001/auth/refresh') {
+        if (originalRequest.url === `${config.API_URL}/auth/refresh`) {
           console.log('Refresh token 已过期');
           handleLogout();
           return Promise.reject(error);
@@ -111,7 +112,7 @@ const setupResponseInterceptor = () => {
 
           try {
             // 尝试刷新token
-            const response = await axios.post('http://localhost:3001/auth/refresh', {
+            const response = await axios.post(`${config.API_URL}/auth/refresh`, {
               refreshToken: refreshToken,
             });
 

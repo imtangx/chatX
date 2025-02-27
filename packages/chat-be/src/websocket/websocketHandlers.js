@@ -20,14 +20,14 @@ export const handleWebSocketConnection = (ws, req) => {
       const messageData = data.slice(1);
       
       const message = decompressMessage(messageData, isCompressed);
-      console.log(`收到${username}发来的消息：`, message);
+      // console.log(`收到${username}发来的消息：`, message);
 
       const { type, text, sender, receiver } = message;
 
       /** 心跳检测 */
       if (type === 'heartbeat') {
         const senderWs = connections.get(username);
-        console.log('哈哈哈', username);
+        // console.log('哈哈哈', username);
         if (senderWs) {
           const response = compressMessage({ type: 'heartbeat' });
           const finalData = new Uint8Array(response.data.length + 1);

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import { useDialog } from '../../context/DialogContext';
-import { MessageInputBox, MessageList } from './';
+import { MessageInputBox } from './';
 const { Header, Footer, Sider, Content } = Layout;
 import { useUserStore } from '../../store/userStore';
 import { useWebSocketStore } from '../../store/wsStore';
 import { WebSocketMessage } from '@chatx/types';
 import { App } from 'antd';
 import CompressionTest from './CompressionTest';
+import MessageList from './MessageList';
 
 interface ChatWindowProps {
   isDark: boolean;
@@ -61,7 +62,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
       >
         <MessageInputBox handleSendMessage={handleSendMessage}></MessageInputBox>
       </Footer>
-      <CompressionTest />
+      {/* <CompressionTest /> */}
     </Layout>
   );
 };

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useUserStore } from '../../store/userStore';
 import { useWebSocketStore } from '../../store/wsStore';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import {config} from '../../config';
 
 interface MessageListProps {
   activeDialog: string;
@@ -21,9 +22,8 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
 
   const loadMessages = async () => {
     if (!hasMore) return;
-
     try {
-      const res = await axios.get(`http://localhost:3001/messages`, {
+      const res = await axios.get(`${config.API_URL}/messages`, {
         params: {
           sender_name: username,
           receiver_name: activeDialog,

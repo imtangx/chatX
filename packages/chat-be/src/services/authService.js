@@ -26,6 +26,8 @@ export const toGithub = async (req, res) => {
   res.redirect(url);
 };
 
+const FE_URL = process.env.FE_URL;
+
 export const callbackGithub = async (req, res) => {
   const { code: authCode } = req.query;
   if (!authCode || typeof authCode !== 'string') {
@@ -66,7 +68,7 @@ export const callbackGithub = async (req, res) => {
       }).toString();
 
       // 重定向到前端的处理路由
-      res.redirect(`http://localhost:5173/auth/callback?${queryParams}`);
+      res.redirect(`${FE_URL}/auth/callback?${queryParams}`);
 
       return;
     }
@@ -100,10 +102,10 @@ export const callbackGithub = async (req, res) => {
     console.log('后端回调参数:',queryParams);
 
     // 重定向到前端的处理路由
-    res.redirect(`http://localhost:5173/auth/callback?${queryParams}`);
+    res.redirect(`${FE_URL}/auth/callback?${queryParams}`);
   } catch (error) {
     console.error(error);
-    res.redirect(`http://localhost:5173/auth/callback?error=登录失败`);
+    res.redirect(`${FE_URL}/auth/callback?error=登录失败`);
   }
 };
 

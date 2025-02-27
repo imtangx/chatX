@@ -17,8 +17,8 @@ const MenuItems: SiderItem[] = [
 ];
 
 const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {
-  const { username } = useUserStore();
-  const avatarUrl = `https://api.dicebear.com/7.x/miniavs/svg?seed=${username}`;
+  const { username, avatar } = useUserStore();
+  const avatarUrl = avatar;
   return (
     <div
       style={{

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Dialog } from '@chatx/types';
 import { useWebSocketStore } from '../../store/wsStore';
 import { useUserStore } from '../../store/userStore';
+import {config} from '../../config'
 
 interface DialogListProps {
   isDark: boolean;
@@ -17,7 +18,7 @@ const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
   const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
 
   const loadDialogs = async () => {
-    const res = await axios.get(`http://localhost:3001/friends/dialogs`);
+    const res = await axios.get(`${config.API_URL}/friends/dialogs`);
     setDialogs(res.data.dialogs);
   };
 

@@ -11,8 +11,13 @@
     "paths": {
       "@chatx/types": ["packages/types/src"],
       "@chatx/fe": ["packages/chat-fe/src"],
+      "@chatx/be": ["packages/chat-be/src"]
     }
   },
-  "include": ["./packages/**/*.ts"],
+  "include": [
+    "./packages/**/*.ts",
+    "packages/chat-be/src/database/databaseServer.js",
+    "packages/chat-be/src/middleware/authMiddleware.js"
+, "packages/chat-be/src/routes/authRoutes.js", "packages/chat-be/src/routes/friendRoutes.js", "packages/chat-be/src/routes/messageRoutes.js", "packages/chat-be/src/services/authService.js", "packages/chat-be/src/services/friendService.js", "packages/chat-be/src/services/messageService.js", "packages/chat-be/src/utils/auth.js", "packages/chat-be/src/websocket/websocketHandlers.js", "packages/chat-be/src/websocket/websocketServer.js", "packages/chat-be/src/main.js", "packages/chat-be/src/config/configuration.js"  ],
   "exclude": ["**/node_modules", "**/dist"]
 }

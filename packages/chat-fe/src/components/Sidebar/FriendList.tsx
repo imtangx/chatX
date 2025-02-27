@@ -3,13 +3,14 @@ import { Avatar, List, Card, Tag } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import { User } from '@chatx/types';
+import {config} from '../../config'
 
 const FriendList = () => {
   const [friends, setFriends] = useState<User[]>([]);
 
   useEffect(() => {
     const loadFriends = async () => {
-      const res = await axios.get(`http://localhost:3001/friends`);
+      const res = await axios.get(`${config.API_URL}/friends`);
       setFriends(res.data.friends);
     };
     loadFriends();
@@ -27,13 +28,13 @@ const FriendList = () => {
               title={
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   {friend.username}
-                  <Tag
+                  {/* <Tag
                     style={{ marginLeft: '8px' }}
                     icon={true ? <CheckCircleFilled /> : <CloseCircleFilled />}
                     color={true ? 'green' : 'red'}
                   >
                     {true ? '在线' : '离线'}
-                  </Tag>
+                  </Tag> */}
                 </div>
               }
               avatar={<Avatar src={friend.avatar} />}

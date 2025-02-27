@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { config } from '../config';
 
 export default () => {
   const { message } = App.useApp();
@@ -32,7 +33,7 @@ export default () => {
     console.log('表单提交的数据：', values);
 
     try {
-      const response = await axios.post(`http://localhost:3001/auth/email/verify`, {
+      const response = await axios.post(`${config.API_URL}/auth/email/verify`, {
         email: values.email,
         code: values.captcha,
       });
@@ -56,7 +57,7 @@ export default () => {
       email: values.email,
     };
     try {
-      const registerBackendUrl = 'http://localhost:3001/auth/register';
+      const registerBackendUrl = `${config.API_URL}/auth/register`;
       const response = await axios.post(registerBackendUrl, apiPayload);
       console.log('注册成功，后端响应数据:', response.data);
       message.success('注册成功，请前往登录！');
@@ -72,7 +73,7 @@ export default () => {
 
   const handleGetCaptcha = async () => {
     try {
-      const response = await axios.post(`http://localhost:3001/auth/email/code`, {
+      const response = await axios.post(`${config.API_URL}/auth/email/code`, {
         email: form.getFieldValue('email'),
       });
       console.log('获取验证码成功，后端响应数据:', response.data);

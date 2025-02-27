@@ -21,6 +21,7 @@ import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
+import {config} from '../config'
 
 type LoginType = 'email' | 'account';
 
@@ -52,7 +53,7 @@ export default () => {
     }
 
     try {
-      const loginBackendUrl = 'http://localhost:3001/auth/login';
+      const loginBackendUrl = `${config.API_URL}/auth/login`;
       const response = await axios.post(loginBackendUrl, apiPayload);
       console.log('登录成功，后端响应数据:', response.data);
       const { user, token, refreshToken } = response.data;
@@ -69,7 +70,7 @@ export default () => {
   };
 
   const handleGithubLogin = () => {
-    window.location.href = 'http://localhost:3001/auth/github';
+    window.location.href = `${config.API_URL}/auth/github`;
   };
 
   // 如果存在token 跳转首页
