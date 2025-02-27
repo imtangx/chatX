@@ -4,42 +4,59 @@ import { WebSocketMessage } from '@chatx/types';
 import axios from 'axios';
 import { useUserStore } from '../../store/userStore';
 import { useWebSocketStore } from '../../store/wsStore';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 interface MessageListProps {
   activeDialog: string;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
-  const [messages, setMessages] = useState<WebSocketMessage[]>([]);
-  const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
   const { username } = useUserStore();
-  const listRef = useRef<HTMLDivElement>(null);
-  const [scrollOffset, setScrollOffset] = useState<number>(0);
-  const [listHeight, setListHeight] = useState<number>(0);
+  const [messages, setMessages] = useState<WebSocketMessage[]>([]);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [lastMessageId, setLastMessageId] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pageSize = 15;
+  const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
 
-  const scrollToBottom = () => {
-    if (listRef.current) {
-      setTimeout(() => {
-        listRef.current?.scrollTo({
-          top: listRef.current.scrollHeight,
-          behavior: 'smooth',
-        });
-      }, 100);
+  const loadMessages = async () => {
+    if (!hasMore) return;
+
+    try {
+      const res = await axios.get(`http://localhost:3001/messages`, {
+        params: {
+          sender_name: username,
+          receiver_name: activeDialog,
+          last_message_id: lastMessageId,
+          page_size: pageSize,
+        },
+      });
+
+      const newMessages = res.data.messages;
+      if (newMessages.length > 0) {
+        setMessages(prev => [...prev, ...newMessages]);
+        setLastMessageId(newMessages[newMessages.length - 1].id);
+        if (newMessages.length < pageSize) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error('加载消息失败', err);
+      setHasMore(false);
     }
   };
 
-  const handleScroll = (e: SyntheticEvent<EventTarget>) => { // 类型标注 e 为 UIEvent<HTMLDivElement>
-    const target = e.target as HTMLDivElement;
-    const scrollTop = target.scrollTop;
-    setScrollOffset(scrollTop);
+  const scrollToButtom = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
   };
 
   useEffect(() => {
-    if (listRef.current) {
-      const height = listRef.current.getBoundingClientRect().height;
-      setListHeight(height);
-    }
     if (!lastChatMessage) return;
+    if (!activeDialog) return;
 
     const isCurrentDialog =
       (lastChatMessage.sender === activeDialog && lastChatMessage.receiver === username) ||
@@ -48,65 +65,45 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
     if (!isCurrentDialog) {
       return;
     }
-
-    setMessages(prevMessages => [...prevMessages, lastChatMessage]);
-    scrollToBottom();
-  }, [lastChatMessage, activeDialog, username]);
+    setMessages(prevMessages => [lastChatMessage, ...prevMessages]);
+    if (lastChatMessage.sender === username) {
+      scrollToButtom();
+    }
+  }, [lastChatMessage]);
 
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3001/messages`, {
-          params: {
-            sender_name: username,
-            receiver_name: activeDialog,
-          },
-        });
-        setMessages(res.data.messages);
-        scrollToBottom();
-      } catch (error) {
-        console.error('加载消息失败:', error);
-      }
-    };
-
-    if (activeDialog) {
-      loadMessages();
-    }
+    if (!activeDialog) return;
+    setMessages([]);
+    setLastMessageId(null);
+    setHasMore(true);
+    loadMessages();
   }, [activeDialog]);
-
-  const getCurrentDialog = () => {
-    const items: ReactNode[] = [];
-    const startIndex = Math.max(0, Math.floor(scrollOffset / 70) - 2);
-    const nums = Math.ceil(listHeight / 70);
-    const endIndex = Math.min(startIndex + nums + 2, messages.length - 1);
-
-    for (let i = startIndex; i <= endIndex; i++) {
-      const itemStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: 70 * i,
-        width: '100%',
-      };
-      items.push(
-        <MessageItem
-          style={itemStyle}
-          key={i}
-          message={messages[i].text!}
-          isSelf={messages[i].sender === username}
-          timestamp={messages[i].timestamp}
-        />
-      );
-    }
-
-    return items;
-  };
 
   return (
     <div
-      ref={listRef}
-      onScroll={handleScroll}
-      style={{ position: 'relative', height: '100%', width: '100%', overflow: 'auto' }}
+      ref={containerRef}
+      id='container'
+      style={{ height: '100%', width: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column-reverse' }}
     >
-      <div style={{ height: messages.length * 70 }}>{getCurrentDialog()}</div>
+      <InfiniteScroll
+        dataLength={messages.length}
+        next={loadMessages}
+        hasMore={hasMore}
+        loader={<h4>Loading...</h4>}
+        scrollableTarget='container'
+        inverse={true}
+        style={{ display: 'flex', flexDirection: 'column-reverse' }}
+        endMessage={<h4>没有更多消息啦！</h4>}
+      >
+        {messages.map((message, index) => (
+          <MessageItem
+            key={index}
+            message={message.text!}
+            isSelf={message.sender === username}
+            timestamp={message.timestamp}
+          ></MessageItem>
+        ))}
+      </InfiniteScroll>
     </div>
   );
 };
