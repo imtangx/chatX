@@ -51,6 +51,7 @@ export const handleWebSocketConnection = (ws, req) => {
       );
 
       const messageToSend = compressMessage({
+        id: result.insertId,
         type: 'chat',
         text,
         sender,

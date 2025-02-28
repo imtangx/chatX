@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useUserStore } from '../../store/userStore';
 import { useWebSocketStore } from '../../store/wsStore';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import {config} from '../../config';
+import { config } from '../../config';
 
 interface MessageListProps {
   activeDialog: string;
@@ -15,10 +15,37 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
   const { username } = useUserStore();
   const [messages, setMessages] = useState<WebSocketMessage[]>([]);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [lastMessageId, setLastMessageId] = useState<number | null>(null);
+  const lastMessageId = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageSize = 15;
   const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
+
+  /**
+   *  虚拟列表相关
+   */
+  const [scrollTop, setScrollTop] = useState<number>(0);
+  const [visibleMessages, setVisibleMessages] = useState<WebSocketMessage[]>([]); // 当前可见的消息
+  const itemHeight = 70; // 每条消息的高度（根据实际情况调整）
+  const containerHeight = containerRef.current?.clientHeight || 500; // 容器高度
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      setScrollTop(containerRef.current.scrollTop);
+      calcVisibleMessages();
+    }
+  };
+
+  const calcVisibleMessages = () => {
+    if (!containerRef.current) return;
+    const startIndex = Math.max(0, Math.floor(-scrollTop / itemHeight) - 3);
+    const endIndex = Math.min(messages.length - 1, startIndex + Math.ceil(containerHeight / itemHeight) + 3);
+    setVisibleMessages(messages.slice(startIndex, endIndex + 1));
+  };
+
+  useEffect(() => {
+    if (!activeDialog) return;
+    calcVisibleMessages();
+  }, [messages, lastChatMessage, activeDialog, containerRef.current?.scrollTop]);
 
   const loadMessages = async () => {
     if (!hasMore) return;
@@ -27,7 +54,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
         params: {
           sender_name: username,
           receiver_name: activeDialog,
-          last_message_id: lastMessageId,
+          last_message_id: lastMessageId.current,
           page_size: pageSize,
         },
       });
@@ -35,7 +62,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
       const newMessages = res.data.messages;
       if (newMessages.length > 0) {
         setMessages(prev => [...prev, ...newMessages]);
-        setLastMessageId(newMessages[newMessages.length - 1].id);
+        lastMessageId.current = newMessages[newMessages.length - 1].id;
         if (newMessages.length < pageSize) {
           setHasMore(false);
         }
@@ -67,14 +94,14 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
     }
     setMessages(prevMessages => [lastChatMessage, ...prevMessages]);
     if (lastChatMessage.sender === username) {
-      scrollToButtom();
+      setTimeout(scrollToButtom, 0); /** 确保渲染消息后再到底部 */
     }
   }, [lastChatMessage]);
 
   useEffect(() => {
     if (!activeDialog) return;
     setMessages([]);
-    setLastMessageId(null);
+    lastMessageId.current = null;
     setHasMore(true);
     loadMessages();
   }, [activeDialog]);
@@ -82,6 +109,7 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
   return (
     <div
       ref={containerRef}
+      onScroll={handleScroll}
       id='container'
       style={{ height: '100%', width: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column-reverse' }}
     >
@@ -95,14 +123,35 @@ const MessageList: React.FC<MessageListProps> = ({ activeDialog }) => {
         style={{ display: 'flex', flexDirection: 'column-reverse' }}
         endMessage={<h4>没有更多消息啦！</h4>}
       >
-        {messages.map((message, index) => (
+        {/* {messages.map((message, index) => (
           <MessageItem
             key={index}
             message={message.text!}
             isSelf={message.sender === username}
             timestamp={message.timestamp}
           ></MessageItem>
-        ))}
+        ))} */}
+        <div style={{ height: `${messages.length * itemHeight}px`, position: 'relative' }}>
+          {visibleMessages.map((message, index) => {
+            const actualIndex = messages.length - 1 - messages.findIndex(msg => msg.id === message.id);
+            return (
+              <div
+                key={message.id}
+                style={{
+                  position: 'absolute',
+                  top: `${actualIndex * itemHeight}px`,
+                  width: '100%',
+                }}
+              >
+                <MessageItem
+                  message={message.text!}
+                  isSelf={message.sender === username}
+                  timestamp={message.timestamp}
+                />
+              </div>
+            );
+          })}
+        </div>
       </InfiniteScroll>
     </div>
   );
