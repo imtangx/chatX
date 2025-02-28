@@ -1,5 +1,6 @@
 import React from 'react';
 import { List, Avatar } from 'antd';
+import { useUserStore } from '../../store/userStore';
 
 interface MessageItemProps {
   style?: React.CSSProperties;
@@ -18,6 +19,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ style, message, isSelf, times
     });
   };
 
+  const {avatar} = useUserStore();
+
   return (
     <div
       style={{
@@ -28,7 +31,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ style, message, isSelf, times
         padding: '4px 8px',
       }}
     >
-      <Avatar src='https://api.dicebear.com/7.x/miniavs/svg?seed=1'></Avatar>
+      <Avatar src={avatar}></Avatar>
       <div
         style={{
           width: '100%',
