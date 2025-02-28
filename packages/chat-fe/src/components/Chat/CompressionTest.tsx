@@ -15,6 +15,7 @@ const CompressionTest: React.FC = () => {
   const runTest = () => {
     // 生成一个大的测试消息
     const testMessage: WebSocketMessage = {
+      id: 1,
       type: 'chat',
       text: '这是一条测试消息'.repeat(1000), 
       sender: 'testUser',

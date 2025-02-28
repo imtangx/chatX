@@ -25,6 +25,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
       return;
     }
     const websocketMessage: WebSocketMessage = {
+      id: 1,
       type: 'chat',
       text,
       sender: username!,

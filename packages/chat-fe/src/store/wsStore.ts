@@ -59,7 +59,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
   sendHeartbeat: () => {
     const { socket } = get();
     if (socket) {
-      const compressedResult = compressMessage({ type: 'heartbeat' });
+      const compressedResult = compressMessage({ id: 1, type: 'heartbeat' });
       if (!compressedResult) return;
 
       const { data, compressed } = compressedResult;
