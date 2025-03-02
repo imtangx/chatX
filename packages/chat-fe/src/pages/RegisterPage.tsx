@@ -94,7 +94,7 @@ export default () => {
         <LoginForm
           logo={logoSvg}
           title='chatX'
-          subTitle='轻量级的聊天应用'
+          subTitle='一个实时、便捷的聊天应用'
           onFinish={handleFormFinish}
           form={form}
           submitter={{

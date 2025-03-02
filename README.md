@@ -1,6 +1,6 @@
 # ChatX - 轻量级聊天应用
 
-ChatX 是一个基于 React + TypeScript + Node.js 构建的轻量级聊天应用。
+ChatX 是一个基于 React + TypeScript + Zustand + Node.js 构建的聊天应用。
 
 ## 主要功能
 
