@@ -16,6 +16,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ style, message, isSelf, times
     return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Asia/Shanghai',
     });
   };
 
