@@ -39,8 +39,7 @@ const handleLogout = () => {
   const { logout } = useUserStore.getState();
   logout();
   localStorage.removeItem('user-storage');
-  localStorage.removeItem('activeItem');
-  localStorage.removeItem('activeDialog');
+  localStorage.removeItem('home-storage');
   window.location.href = '/auth/login';
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import { useDialog } from '../../context/DialogContext';
+import { useHomeStore } from '../../store/homeStore';
 import { MessageInputBox } from './';
 const { Header, Footer, Sider, Content } = Layout;
 import { useUserStore } from '../../store/userStore';
@@ -16,7 +16,7 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ isDark }) => {
   const { message } = App.useApp();
-  const { activeDialog } = useDialog();
+  const { activeDialog } = useHomeStore();
   const { username } = useUserStore();
   const { sendMessage } = useWebSocketStore();
 

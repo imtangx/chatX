@@ -3,9 +3,9 @@ import { BubbleGrey, BubbleBlue, FriendsGrey, FriendsBlue, LogoutGrey } from '..
 import { Avatar } from 'antd';
 import { SiderItem } from '@chatx/types';
 import { useUserStore } from '../../store/userStore';
+import { useHomeStore } from '../../store/homeStore';
 
 interface LeftSiderProps {
-  activeItem: string;
   isDark: boolean;
   handleItemClick: (id: string) => void;
   handleLogout: () => void;
@@ -16,7 +16,8 @@ const MenuItems: SiderItem[] = [
   { id: 'friends', label: '朋友', icon: FriendsGrey, iconSelected: FriendsBlue },
 ];
 
-const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemClick, handleLogout }) => {
+const LeftSider: React.FC<LeftSiderProps> = ({ isDark, handleItemClick, handleLogout }) => {
+  const { activeMenuItem } = useHomeStore();
   const { username, avatar } = useUserStore();
   const avatarUrl = avatar;
   return (
@@ -43,7 +44,7 @@ const LeftSider: React.FC<LeftSiderProps> = ({ activeItem, isDark, handleItemCli
           style={{ cursor: 'pointer', margin: '15px 0', width: '80%' }}
         >
           <img
-            src={activeItem === item.id ? item.iconSelected : item.icon}
+            src={activeMenuItem === item.id ? item.iconSelected : item.icon}
             alt={item.label}
             style={{ width: '100%', height: '100%' }}
           />

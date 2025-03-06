@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Avatar, List, Card, Tag } from 'antd';
-import { useDialog } from '../../context/DialogContext';
 import axios from 'axios';
 import { Dialog } from '@chatx/types';
 import { useWebSocketStore } from '../../store/wsStore';
 import { useUserStore } from '../../store/userStore';
 import {config} from '../../config'
+import { useHomeStore } from '../../store/homeStore';
 
-interface DialogListProps {
-  isDark: boolean;
-}
-
-const DialogList: React.FC<DialogListProps> = ({ isDark }) => {
+const DialogList: React.FC = () => {
+  const isDark = localStorage.getItem('isDark') === 'true';
   const [dialogs, setDialogs] = useState<Dialog[]>([]);
-  const { activeDialog, setActiveDialog } = useDialog();
+  const { activeDialog, setActiveDialog } = useHomeStore();
   const { username } = useUserStore();
   const lastChatMessage = useWebSocketStore(state => state.lastChatMessage);
 

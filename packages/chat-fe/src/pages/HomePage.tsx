@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { Layout, Input, Button, ConfigProvider, theme } from 'antd';
-import { DialogList, LeftSider, FriendList } from '../components/Sidebar';
+import { DialogList, LeftSider, FriendList, SearchBox } from '../components/Sidebar';
 import { ChatWindow } from '../components/Chat';
 import { FriendRequestWindow } from '../components/Friend';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
 import { useWebSocketStore } from '../store/wsStore';
+import { useHomeStore } from '../store/homeStore';
 import { App } from 'antd';
-import {config} from '../config'
+import { config } from '../config';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -17,13 +18,9 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
-  const getInitActiveItem = () => {
-    const storedActiveItem = localStorage.getItem('activeItem');
-    return storedActiveItem ? JSON.parse(storedActiveItem) : 'chat';
-  };
   const { message } = App.useApp();
   const navigate = useNavigate();
-  const [activeItem, setActiveItem] = useState<string>(getInitActiveItem);
+  const {activeMenuItem, setActiveMenuItem} = useHomeStore();
   const { username, logout } = useUserStore();
   const { connect, disconnect, isReconnecting } = useWebSocketStore();
   useEffect(() => {
@@ -47,17 +44,13 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
   }, [isReconnecting]);
 
   const handleItemClick = (id: string) => {
-    setActiveItem(prevActiveItem => {
-      localStorage.setItem('activeItem', JSON.stringify(id));
-      return id;
-    });
+    setActiveMenuItem(id);
   };
 
   const handleLogout = () => {
     logout();
     localStorage.removeItem('user-storage');
-    localStorage.removeItem('activeItem');
-    localStorage.removeItem('activeDialog');
+    localStorage.removeItem('home-storage');
     navigate('/auth/login');
   };
 
@@ -71,7 +64,6 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
         }}
       >
         <LeftSider
-          activeItem={activeItem}
           isDark={isDark}
           handleItemClick={handleItemClick}
           handleLogout={handleLogout}
@@ -92,28 +84,16 @@ const HomePage: React.FC<HomePageProps> = ({ isDark }) => {
               background: isDark ? 'rgb(32, 32, 32)' : 'rgb(247, 247, 247)',
             }}
           >
-            <div style={{ display: 'flex', width: '100%' }}>
-              <form style={{ display: 'flex', margin: '15px 20px', width: '100%' }}>
-                <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-                  <Input type='text' placeholder='搜索' variant='filled'></Input>
-                </ConfigProvider>
-                <Button
-                  type='primary'
-                  htmlType='submit'
-                  icon={<SearchOutlined />}
-                  style={{ marginLeft: '5px' }}
-                ></Button>
-              </form>
-            </div>
+            <SearchBox />
           </Header>
           <Content style={{ background: isDark ? 'rgb(32, 32, 32)' : 'rgb(243, 243, 243)', display: 'flex' }}>
-            {activeItem === 'chat' && <DialogList isDark={isDark}></DialogList>}
-            {activeItem === 'friends' && <FriendList></FriendList>}
+            {activeMenuItem === 'chat' && <DialogList></DialogList>}
+            {activeMenuItem === 'friends' && <FriendList></FriendList>}
           </Content>
         </Layout>
       </Sider>
-      {activeItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
-      {activeItem === 'friends' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
+      {activeMenuItem === 'chat' && <ChatWindow isDark={isDark}></ChatWindow>}
+      {activeMenuItem === 'friends' && <FriendRequestWindow isDark={isDark}></FriendRequestWindow>}
     </Layout>
   );
 };
