@@ -21,7 +21,7 @@ import logoSvg from '../assets/logo.svg';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserStore } from '../store/userStore';
-import {config} from '../config'
+import { config } from '../config';
 
 type LoginType = 'email' | 'account';
 
@@ -73,6 +73,34 @@ export default () => {
     window.location.href = `${config.API_URL}/auth/github`;
   };
 
+  const handleGoogleLogin = () => {
+    console.log(config.API_URL);
+    window.location.href = `${config.API_URL}/auth/google`;
+  };
+
+  useEffect(() => {
+    const sendHash = async () => {
+      const fragment = window.location.hash.substring(1);
+      if (fragment) {
+        const params = new URLSearchParams(fragment);
+        const accessToken = params.get('access_token');
+        if (accessToken) {
+          // TODO 把token传到后端google回调函数 在后端拿到name 然后注册登录
+          console.log('后端处理：', `${config.API_URL}/auth/google/callback`);
+          try {
+            const response = await axios.get(`${config.API_URL}/auth/google/callback?access_token=${accessToken}`);
+            console.log('Google登录成功，后端响应数据:', response.data);
+            window.location.href = response.data.redirect;
+          } catch (err) {
+            console.error('Google登录失败，请求出错：', err);
+          }
+        }
+      }
+    };
+
+    sendHash();
+  }, []);
+
   // 如果存在token 跳转首页
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -97,8 +125,8 @@ export default () => {
             <Space>
               <a style={{ color: 'rgb(204, 204, 204)' }}>其他登录方式</a>
               <GithubOutlined style={iconStyles} onClick={handleGithubLogin} />
-              <GoogleOutlined style={iconStyles} />
-              <WeiboCircleOutlined style={iconStyles} />
+              <GoogleOutlined style={iconStyles} onClick={handleGoogleLogin} />
+              {/* <WeiboCircleOutlined style={iconStyles} /> */}
             </Space>
           }
           onFinish={handleFormFinish}
