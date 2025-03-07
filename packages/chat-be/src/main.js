@@ -5,13 +5,19 @@ import friendRoutes from './routes/friendRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import { initializeWebSocketServer } from './websocket/websocketServer.js';
 import http from 'http';
+import cookieParser from 'cookie-parser';
+
 
 const app = express();
 const port = 3001;
 
 /** 中间件 */
+app.use(cookieParser());
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 
 /** 路由 */
 app.use('/auth', authRoutes);

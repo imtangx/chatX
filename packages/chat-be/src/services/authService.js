@@ -8,6 +8,7 @@ import { GITHUB_SCOPES } from '../thirdPartyAuth/github/constant.js';
 import { GOOGLE_SCOPES } from '../thirdPartyAuth/google/constant.js';
 import axios from 'axios';
 import e from 'express';
+import path from 'path';
 
 const FE_URL = process.env.FE_URL;
 
@@ -64,22 +65,31 @@ export const callbackGithub = async (req, res) => {
       oauth_id,
       'github',
     ]);
-
+    
+    
     /**
      * 存在github账号 直接登录
-     */
-    if (existingGithubs.length > 0) {
-      const user = existingGithubs[0];
-      const token = authUtils.genToken({ userId: user.id, username: user.username });
-      const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
-
+    */
+   if (existingGithubs.length > 0) {
+     const user = existingGithubs[0];
+     const token = authUtils.genToken({ userId: user.id, username: user.username });
+     const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
+ 
+     res.cookie('refreshToken', refreshToken, {
+       httpOnly: true,
+       secure: process.env.NODE_ENV === 'production',
+       sameSite: 'strict',
+       path: '/auth/refresh',
+       // maxAge: 24 * 60 * 60 * 1000, // 24小时
+     });
+     
       // 修改返回逻辑，不直接返回JSON，而是重定向到前端
       const queryParams = new URLSearchParams({
         userId: user.id.toString(),
         username: user.username,
         avatar: user.avatar,
         token,
-        refreshToken,
+        // refreshToken,
         provider: 'github',
       }).toString();
 
@@ -105,13 +115,21 @@ export const callbackGithub = async (req, res) => {
     const token = authUtils.genToken({ username, userId });
     const refreshToken = authUtils.genRefreshToken({ username, userId });
 
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      // maxAge: 24 * 60 * 60 * 1000, // 24小时
+    });
+
     // 修改返回逻辑，不直接返回JSON，而是重定向到前端
     const queryParams = new URLSearchParams({
       userId: userId.toString(),
       username,
       avatar,
       token,
-      refreshToken,
+      // refreshToken,
       provider: 'github',
     }).toString();
 
@@ -163,12 +181,20 @@ export const callbackGoogle = async (req, res) => {
       const token = authUtils.genToken({ userId: user.id, username: user.username });
       const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
 
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/auth/refresh',
+        // maxAge: 24 * 60 * 60 * 1000, // 24小时
+      });
+
       const queryParams = new URLSearchParams({
         userId: user.id.toString(),
         username: user.username,
         avatar: user.avatar,
         token,
-        refreshToken,
+        // refreshToken,
         provider: 'google',
       }).toString();
 
@@ -192,13 +218,21 @@ export const callbackGoogle = async (req, res) => {
     const token = authUtils.genToken({ username, userId });
     const refreshToken = authUtils.genRefreshToken({ username, userId });
 
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      // maxAge: 24 * 60 * 60 * 1000, // 24小时
+    });
+
     // 修改返回逻辑，不直接返回JSON，而是重定向到前端
     const queryParams = new URLSearchParams({
       userId: userId.toString(),
       username,
       avatar,
       token,
-      refreshToken,
+      // refreshToken,
       provider: 'github',
     }).toString();
 
@@ -299,6 +333,18 @@ export const login = async (req, res) => {
     const token = authUtils.genToken({ userId: user.id, username: user.username });
     const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
 
+    console.log('token: ', authUtils.verifyToken(token));
+    console.log('refreshToken: ', authUtils.verifyToken(refreshToken));
+    console.log('re:', refreshToken);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      // maxAge: 24 * 60 * 60 * 1000, // 24小时
+    });
+
     // 登录成功，返回用户信息和 JWT
     res.status(StatusCodes.OK).json({
       message: '登录成功',
@@ -308,7 +354,7 @@ export const login = async (req, res) => {
         avatar: user.avatar,
       },
       token,
-      refreshToken,
+      // refreshToken,
     });
   } catch (err) {
     console.error('登录验证出错：', err);
@@ -317,13 +363,14 @@ export const login = async (req, res) => {
 };
 
 export const refreshToken = async (req, res) => {
-  const refreshToken = req.body.refreshToken;
+  const refreshToken = req.cookies.refreshToken;
+  console.log('^^', refreshToken);
 
   try {
     const decoded = authUtils.verifyToken(refreshToken);
-
+    // console.log('!!', decoded, Date.now());
     const newToken = authUtils.genToken({ userId: decoded.userId, username: decoded.username });
-
+ 
     res.json({ token: newToken });
   } catch (error) {
     res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Refresh token 已失效，请重新登录' });

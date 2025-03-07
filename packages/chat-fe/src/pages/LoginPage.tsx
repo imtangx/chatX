@@ -26,7 +26,7 @@ import { config } from '../config';
 type LoginType = 'email' | 'account';
 
 export default () => {
-  const { setUser, setTokens } = useUserStore();
+  const { setUser, setToken } = useUserStore();
   const { message } = App.useApp();
   const { token } = theme.useToken();
   const [loginType, setLoginType] = useState<LoginType>('account');
@@ -56,9 +56,10 @@ export default () => {
       const loginBackendUrl = `${config.API_URL}/auth/login`;
       const response = await axios.post(loginBackendUrl, apiPayload);
       console.log('登录成功，后端响应数据:', response.data);
-      const { user, token, refreshToken } = response.data;
+      const { user, token } = response.data;
       setUser(user);
-      setTokens({ token, refreshToken });
+      // setTokens({ token, refreshToken });
+      setToken(token);
       message.success('登录成功！');
       setTimeout(() => {
         navigate('/');

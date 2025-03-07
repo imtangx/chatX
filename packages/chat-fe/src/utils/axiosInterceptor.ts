@@ -2,6 +2,8 @@ import axios from 'axios';
 import { useUserStore } from '../store/userStore';
 import {config} from '../config'
 
+axios.defaults.withCredentials = true;
+
 // 定义等待队列中Promise的类型
 interface QueueItem {
   resolve: (value?: any) => void;
@@ -99,24 +101,12 @@ const setupResponseInterceptor = () => {
           originalRequest._retry = true;
           isRefreshing = true;
 
-          // 获取refresh token
-          const { refreshToken, setToken } = useUserStore.getState();
-          if (!refreshToken) {
-            // 代表首次登录失败 不需要重定向*
-            console.log('没有 refresh token');
-            processQueue(new Error('首次登录失败'), null);
-            isRefreshing = false;
-            return Promise.reject(error);
-          }
-
           try {
-            // 尝试刷新token
-            const response = await axios.post(`${config.API_URL}/auth/refresh`, {
-              refreshToken: refreshToken,
-            });
+            const response = await axios.post(`${config.API_URL}/auth/refresh`, {});
 
             // 保存新的access token
             const newToken = response.data.token;
+            const { setToken } = useUserStore.getState();
             setToken(newToken);
 
             // 更新当前请求的token
