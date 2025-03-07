@@ -3,7 +3,13 @@ import * as authUtils from '../utils/auth.js';
 import { StatusCodes } from 'http-status-codes';
 import { EmailLogin } from '../thirdPartyAuth/email/index.js';
 import { GithubLogin } from '../thirdPartyAuth/github/index.js';
+import { GoogleLogin } from '../thirdPartyAuth/google/index.js';
 import { GITHUB_SCOPES } from '../thirdPartyAuth/github/constant.js';
+import { GOOGLE_SCOPES } from '../thirdPartyAuth/google/constant.js';
+import axios from 'axios';
+import e from 'express';
+
+const FE_URL = process.env.FE_URL;
 
 const emailLogin = new EmailLogin({
   host: process.env.EMAIL_HOST,
@@ -20,13 +26,24 @@ const githubLogin = new GithubLogin({
   scope: [...GITHUB_SCOPES.MINIMAL],
 });
 
+const googleLogin = new GoogleLogin({
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+  scope: [...GOOGLE_SCOPES.MINIMAL],
+});
+
 export const toGithub = async (req, res) => {
   const url = githubLogin.getAuthUrl();
   console.log('回调地址', url);
   res.redirect(url);
 };
 
-const FE_URL = process.env.FE_URL;
+export const toGoogle = async (req, res) => {
+  const url = googleLogin.getAuthUrl();
+  console.log('回调地址', url);
+  res.redirect(url);
+};
 
 export const callbackGithub = async (req, res) => {
   const { code: authCode } = req.query;
@@ -36,9 +53,8 @@ export const callbackGithub = async (req, res) => {
 
   try {
     const response = await githubLogin.handleCallback(authCode);
-    // console.log(response.data.userInfo);
     const { id: oauth_id, avatar_url: avatar, login } = response.data.userInfo;
-    
+
     /**
      *  检查有没有github账号存在
      *  如果有 直接登录
@@ -64,7 +80,7 @@ export const callbackGithub = async (req, res) => {
         avatar: user.avatar,
         token,
         refreshToken,
-        provider: 'github'
+        provider: 'github',
       }).toString();
 
       // 重定向到前端的处理路由
@@ -73,16 +89,16 @@ export const callbackGithub = async (req, res) => {
       return;
     }
 
-
     /**
      * 生成唯一用户名
      */
     // let username = login;
     let username = await authUtils.genUniqueName(login);
+    let password = await authUtils.hashPassword(oauth_id);
 
     const [result] = await pool.execute(
-      'INSERT INTO users (username, avatar, oauth_provider, oauth_id) VALUES (?, ?, ?, ?)',
-      [username, avatar, 'github', oauth_id]
+      'INSERT INTO users (username, password, avatar, oauth_provider, oauth_id) VALUES (?, ?, ?, ?, ?)',
+      [username, password, avatar, 'github', oauth_id]
     );
 
     const userId = result.insertId;
@@ -96,15 +112,100 @@ export const callbackGithub = async (req, res) => {
       avatar,
       token,
       refreshToken,
-      provider: 'github'
+      provider: 'github',
     }).toString();
-
-    console.log('后端回调参数:',queryParams);
 
     // 重定向到前端的处理路由
     res.redirect(`${FE_URL}/auth/callback?${queryParams}`);
   } catch (error) {
     console.error(error);
+    res.redirect(`${FE_URL}/auth/callback?error=登录失败`);
+  }
+};
+
+/** 重定向到前端处理哈希 */
+export const tempGoogle = async (req, res) => {
+  res.redirect(`${FE_URL}/auth/login`);
+};
+
+/** 拿到前端通过哈希解析出来的数据 拿到数据 模仿 github回调登录 */
+export const callbackGoogle = async (req, res) => {
+  const { access_token } = req.query;
+
+  try {
+    const response = await axios.get(
+      `https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,photos`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+    const oauth_id = response.data.resourceName;
+    const { displayName } = response.data.names[0];
+    const avatar = response.data.photos[0].url;
+
+    /**
+     * 检查有没有google账号存在
+     * 如果有 直接登录
+     * 如果没有 新建一个账户
+     */
+    const [existingGithubs] = await pool.execute('SELECT * FROM users WHERE oauth_id = ? AND oauth_provider = ?', [
+      oauth_id,
+      'google',
+    ]);
+
+    /**
+     * 存在google账号 直接登录
+     */
+    if (existingGithubs.length > 0) {
+      const user = existingGithubs[0];
+      const token = authUtils.genToken({ userId: user.id, username: user.username });
+      const refreshToken = authUtils.genRefreshToken({ userId: user.id, username: user.username });
+
+      const queryParams = new URLSearchParams({
+        userId: user.id.toString(),
+        username: user.username,
+        avatar: user.avatar,
+        token,
+        refreshToken,
+        provider: 'google',
+      }).toString();
+
+      // 重定向到前端的处理路由
+      res.json({ redirect: `${FE_URL}/auth/callback?${queryParams}` });
+      return;
+    }
+
+    /**
+     * 生成唯一用户名
+     */
+    let username = await authUtils.genUniqueName(displayName);
+    let password = await authUtils.hashPassword(oauth_id);
+
+    const [result] = await pool.execute(
+      'INSERT INTO users (username, password, avatar, oauth_provider, oauth_id) VALUES (?, ?, ?, ?, ?)',
+      [username, password, avatar, 'google', oauth_id]
+    );
+
+    const userId = result.insertId;
+    const token = authUtils.genToken({ username, userId });
+    const refreshToken = authUtils.genRefreshToken({ username, userId });
+
+    // 修改返回逻辑，不直接返回JSON，而是重定向到前端
+    const queryParams = new URLSearchParams({
+      userId: userId.toString(),
+      username,
+      avatar,
+      token,
+      refreshToken,
+      provider: 'github',
+    }).toString();
+
+    // 重定向到前端的处理路由
+    res.json({ redirect: `${FE_URL}/auth/callback?${queryParams}` });
+  } catch (err) {
+    console.error(err);
     res.redirect(`${FE_URL}/auth/callback?error=登录失败`);
   }
 };
