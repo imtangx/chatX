@@ -73,4 +73,4 @@ const MessageItem: React.FC<MessageItemProps> = ({ style, message, isSelf, times
   );
 };
 
-export default MessageItem;
+export default React.memo(MessageItem);
