@@ -1,9 +1,10 @@
 import React from 'react';
 import { BubbleGrey, BubbleBlue, FriendsGrey, FriendsBlue, LogoutGrey } from '../../assets';
-import { Avatar } from 'antd';
+import { Avatar, Upload } from 'antd';
 import { SiderItem } from '@chatx/types';
 import { useUserStore } from '../../store/userStore';
 import { useHomeStore } from '../../store/homeStore';
+import { config } from '../../config';
 
 interface LeftSiderProps {
   isDark: boolean;
@@ -18,7 +19,7 @@ const MenuItems: SiderItem[] = [
 
 const LeftSider: React.FC<LeftSiderProps> = ({ isDark, handleItemClick, handleLogout }) => {
   const { activeMenuItem } = useHomeStore();
-  const { username, avatar } = useUserStore();
+  const { username, avatar, setAvatar } = useUserStore();
   const avatarUrl = avatar;
   return (
     <div
@@ -32,7 +33,19 @@ const LeftSider: React.FC<LeftSiderProps> = ({ isDark, handleItemClick, handleLo
       }}
     >
       <div style={{ width: '80%', margin: '15px 0' }}>
-        <Avatar src={avatarUrl} style={{ height: '100%', width: '100%' }} />
+        <Upload
+          action={`${config.API_URL}/upload/avatar/?username=${username}`}
+          name='avatar'
+          onChange={info => {
+            if (info.file.status === 'done') {
+              setAvatar(info.file.response.filename);
+            }
+          }}
+          showUploadList={false}
+          accept='image/*'
+        >
+          <Avatar src={avatarUrl} style={{ height: '100%', width: '100%' }} />
+        </Upload>
       </div>
 
       {MenuItems.slice(0, 2).map(item => (

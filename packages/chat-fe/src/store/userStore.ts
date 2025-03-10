@@ -11,6 +11,7 @@ interface UserState {
   refreshToken: string | null;
 
   setUser: (user: User) => void;
+  setAvatar: (avatar: string) => void;
   setToken: (token: string) => void;
   setTokens: (tokens: Tokens) => void;
   logout: () => void;
@@ -26,6 +27,7 @@ export const useUserStore = create<UserState>()(
       refreshToken: null,
 
       setUser: user => set({ ...user }),
+      setAvatar: avatar => set({ avatar }),
       setToken: token => set({ token }),
       setTokens: tokens => set({ ...tokens }),
       logout: () => {

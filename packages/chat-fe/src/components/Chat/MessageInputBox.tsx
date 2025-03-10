@@ -17,7 +17,7 @@ const MessageInputBox: React.FC<MessageInputBoxProps> = ({ handleSendMessage }) 
 
   const handlePressEnter = (e: React.KeyboardEvent) => {
     e.preventDefault();
-    if (Date.now() - lastEnterTimeRef.current < 1000) {
+    if (Date.now() - lastEnterTimeRef.current < 300) {
       message.warning('请勿频繁发送消息');
       return;
     }
